@@ -63,10 +63,18 @@ Desktop.ini
 .tmp/
 .temp/
 
-# Git backup folders (like .git-serveflow-backup)
+# Git backup folders
 .git-*/
 .git_backup*/
 .git.backup*/
+
+# Project folders to exclude from git
+.github/
+.kilo/
+**/test/
+**/tests/
+**/__tests__/
+**/api/
 
 # Misc
 *.tsbuildinfo
