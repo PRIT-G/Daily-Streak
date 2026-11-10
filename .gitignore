@@ -65,7 +65,6 @@ Desktop.ini
 .git.backup*/
 
 # Project folders/files to exclude from git
-.github/
 .kilo/
 **/api/
 QA-REVIEW.md
