@@ -1,0 +1,18 @@
+{
+  "name": "Daily Streak",
+  "short_name": "Streak",
+  "description": "Track your daily coding streaks and consistency.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5f3ec",
+  "theme_color": "#f5f3ec",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

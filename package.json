@@ -1,0 +1,27 @@
+{
+  "name": "daily-streak-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A MERN app for tracking coding activity and streaks",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w server\" \"npm run dev -w client\"",
+    "build": "npm run build -w client",
+    "test": "concurrently --kill-others-on-fail \"npm test -w server\" \"npm test -w client\"",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.15.0",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.15.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^15.12.0",
+    "prettier": "^3.3.3"
+  }
+}
