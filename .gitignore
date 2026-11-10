@@ -66,7 +66,6 @@ Desktop.ini
 
 # Project folders/files to exclude from git
 .kilo/
-**/api/
 QA-REVIEW.md
 
 # Misc
