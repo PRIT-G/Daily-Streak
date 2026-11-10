@@ -127,6 +127,47 @@ npm run format:check # Prettier check (CI)
 npm audit            # Security audit (high severity gates CI)
 ```
 
+## Development Tooling Setup
+
+These config files are committed to keep the project consistent. If you need to recreate or adjust them:
+
+### `package.json` & `package-lock.json`
+- **`package.json`**: Defines workspaces (`server`, `client`), scripts, and dependencies.
+- **`package-lock.json`**: Locks exact dependency versions for reproducible installs. Commit it; do not add to `.gitignore`.
+- **Setup**: Run `npm install` from the project root to install all workspace dependencies.
+
+### ESLint (`eslint.config.js`)
+- Uses ESLint flat config with React support and Prettier compatibility.
+- **Run**: `npm run lint`
+- **Minimal setup** (if recreating): install dev deps and create `eslint.config.js`:
+```bash
+npm install -D eslint @eslint/js eslint-plugin-react globals eslint-config-prettier
+```
+```js
+import js from '@eslint/js';
+import react from 'eslint-plugin-react';
+import globals from 'globals';
+
+export default [
+  js.configs.recommended,
+  { files: ['**/*.{js,jsx}'], languageOptions: { globals: { ...globals.browser, ...globals.node } }, plugins: { react }, rules: { /* project rules */ } }
+];
+```
+
+### Prettier (`.prettierrc.json`)
+- Defines formatting rules (semicolons, single quotes, trailing commas, print width).
+- **Run**: `npm run format` (write) or `npm run format:check` (CI)
+- **Example `.prettierrc.json`**:
+```json
+{
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "es5",
+  "printWidth": 100
+}
+```
+- **Setup**: `npm install -D prettier eslint-config-prettier` and ensure ESLint config includes Prettier to avoid rule conflicts.
+
 ## API Endpoints (Selected)
 
 | Method | Endpoint | Description |
