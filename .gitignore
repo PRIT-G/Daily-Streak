@@ -64,13 +64,14 @@ Desktop.ini
 .git_backup*/
 .git.backup*/
 
-# Project folders to exclude from git
+# Project folders/files to exclude from git
 .github/
 .kilo/
 **/test/
 **/tests/
 **/__tests__/
 **/api/
+QA-REVIEW.md
 
 # Misc
 *.tsbuildinfo
