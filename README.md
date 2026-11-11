@@ -226,11 +226,55 @@ Example Prettier config:
 
 ## Deployment
 
-1. **Build**: `npm run build`
-2. **Configure** production environment variables (MongoDB, JWT, SMTP, OAuth, API URLs)
-3. **Run**: `npm run start` (serve API and built client as configured)
-4. **Harden**: place behind a reverse proxy (e.g. Nginx) with TLS
-5. **Verify**: health checks, auth flows, provider sync, and email delivery
+This repository includes a Vercel configuration for the frontend (`vercel.json`)
+and a Render Blueprint for the API (`render.yaml`). Deploy both from the same
+GitHub repository:
+
+### Backend on Render
+
+1. In Render, create a **Blueprint** from this repository and confirm the
+   `daily-streak-api` web service. The blueprint installs and starts the `server`
+   workspace and configures `/api/health` as its health check.
+2. Provide these values when prompted:
+   - `MONGODB_URI`: a reachable MongoDB connection string (for example, from
+     MongoDB Atlas).
+   - `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`: credentials for an SMTP provider;
+     production startup requires email delivery to be configured.
+   - `CLIENT_ORIGIN`: the deployed Vercel site origin, such as
+     `https://your-project.vercel.app` (no trailing slash).
+   - `API_PUBLIC_URL`: the public Render service origin, such as
+     `https://daily-streak-api.onrender.com` (no trailing slash).
+3. Render generates `JWT_SECRET` automatically. `SMTP_PORT` defaults to `587`
+   and `SMTP_SECURE` to `false`; change these if your SMTP provider requires it.
+4. After the first deploy, confirm
+   `https://<your-render-service>.onrender.com/api/health` responds with
+   `"status":"ok"`.
+
+The blueprint uses Render's free web-service plan to avoid unexpected charges.
+Free services can spin down when idle, so the first request after inactivity may
+take longer. Choose a paid plan in Render if you need always-on service.
+
+### Frontend on Vercel
+
+1. Import the same repository into Vercel. Keep the project root set to the
+   repository root; `vercel.json` builds the `client` workspace and publishes
+   `client/dist`, with an SPA fallback for browser routes.
+2. Set the build environment variable `VITE_API_URL` to
+   `https://<your-render-service>.onrender.com/api` (replace the hostname with
+   the deployed Render service URL). This value is embedded in the frontend at
+   build time; redeploy after changing it.
+3. Once Vercel assigns the production domain, set Render's `CLIENT_ORIGIN` to
+   that exact HTTPS origin and redeploy the API. If you add a custom domain,
+   update `CLIENT_ORIGIN` to that domain as well.
+
+### Optional production integrations
+
+Configure OAuth provider credentials in Render when enabling integrations.
+OAuth callback URLs use `API_PUBLIC_URL`; register the URLs required by the
+provider under `https://<your-render-service>.onrender.com/api/integrations/<provider>/callback`.
+If configuring any OAuth credentials or `INTEGRATION_ADMIN_SECRET`, also set
+`INTEGRATION_TOKEN_ENCRYPTION_KEY` to a private 64-character hexadecimal
+32-byte key. Never put backend secrets in Vercel or `VITE_*` variables.
 
 ---
 
