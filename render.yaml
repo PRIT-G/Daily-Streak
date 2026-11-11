@@ -3,7 +3,7 @@ services:
     name: daily-streak-api
     runtime: node
     plan: free
-    buildCommand: npm ci --workspace=server --include-workspace-root=false
+    buildCommand: npm ci
     startCommand: npm start --workspace=server
     healthCheckPath: /api/health
     envVars:
@@ -27,3 +27,7 @@ services:
         value: '587'
       - key: SMTP_SECURE
         value: 'false'
+      - key: INTEGRATION_TOKEN_ENCRYPTION_KEY
+        generateValue: true
+      - key: INTEGRATION_ADMIN_SECRET
+        generateValue: true
