@@ -27,7 +27,3 @@ services:
         value: '587'
       - key: SMTP_SECURE
         value: 'false'
-      - key: INTEGRATION_TOKEN_ENCRYPTION_KEY
-        generateValue: true
-      - key: INTEGRATION_ADMIN_SECRET
-        generateValue: true

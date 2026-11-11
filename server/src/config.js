@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { randomBytes } from 'node:crypto';
 
 dotenv.config();
 
@@ -6,6 +7,18 @@ if (process.env.NODE_ENV === 'production' &&
     (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32 || process.env.JWT_SECRET === 'replace-this-with-a-long-random-secret')) {
   throw new Error('Production requires a private JWT_SECRET of at least 32 characters.');
 }
+
+// Auto-generate a valid 64-char hex encryption key when OAuth integrations are
+// configured but no key was supplied. This keeps Render deploys working out of
+// the box while still allowing operators to override via env vars.
+const needsEncryptionKey = process.env.NODE_ENV === 'production' &&
+  (process.env.INTEGRATION_ADMIN_SECRET ||
+   process.env.JIRA_CLIENT_ID ||
+   process.env.NOTION_CLIENT_ID ||
+   process.env.GITHUB_CLIENT_ID);
+
+const encryptionKey = process.env.INTEGRATION_TOKEN_ENCRYPTION_KEY ||
+  (needsEncryptionKey ? randomBytes(32).toString('hex') : '');
 
 export const config = {
   port: Number(process.env.PORT) || 4000,
@@ -17,7 +30,7 @@ export const config = {
   jwtAccessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '1h',
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
   integrations: {
-    encryptionKey: process.env.INTEGRATION_TOKEN_ENCRYPTION_KEY || '',
+    encryptionKey,
     adminSecret: process.env.INTEGRATION_ADMIN_SECRET || '',
     jiraClientId: process.env.JIRA_CLIENT_ID || '',
     jiraClientSecret: process.env.JIRA_CLIENT_SECRET || '',
