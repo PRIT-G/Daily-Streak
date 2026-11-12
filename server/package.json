@@ -25,6 +25,6 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
-    "supertest": "^7.0.0"
+    "supertest": "^7.3.2"
   }
 }
