@@ -9,7 +9,9 @@ let running = false;
 
 export async function enqueueSync(userId, provider, { runAt = new Date() } = {}) {
   // Collapse duplicate pending jobs for the same user+provider.
-  const existing = await SyncJob.findOne({ userId, provider, status: 'pending' }).select('_id').lean();
+  const existing = await SyncJob.findOne({ userId, provider, status: 'pending' })
+    .select('_id')
+    .lean();
   if (existing) {
     await SyncJob.updateOne({ _id: existing._id }, { $set: { runAt } });
     return existing._id;
@@ -36,14 +38,26 @@ async function processNextJob() {
         { _id: job._id },
         ok
           ? { $set: { status: 'done', result: result.body, lastError: '' } }
-          : { $set: { status: job.attempts >= MAX_ATTEMPTS ? 'failed' : 'pending', lastError: result.body?.error || `HTTP ${result.status}`, runAt: new Date(Date.now() + 5 * 60 * 1000) } }
+          : {
+              $set: {
+                status: job.attempts >= MAX_ATTEMPTS ? 'failed' : 'pending',
+                lastError: result.body?.error || `HTTP ${result.status}`,
+                runAt: new Date(Date.now() + 5 * 60 * 1000),
+              },
+            }
       );
     } catch (error) {
       await SyncJob.updateOne(
         { _id: job._id },
         job.attempts >= MAX_ATTEMPTS
           ? { $set: { status: 'failed', lastError: error.message } }
-          : { $set: { status: 'pending', lastError: error.message, runAt: new Date(Date.now() + 5 * 60 * 1000) } }
+          : {
+              $set: {
+                status: 'pending',
+                lastError: error.message,
+                runAt: new Date(Date.now() + 5 * 60 * 1000),
+              },
+            }
       );
       logger.warn(`Sync job ${job._id} (${job.provider}) failed: ${error.message}`);
     }

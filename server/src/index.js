@@ -35,16 +35,19 @@ server = app.listen(config.port, () => {
   logger.info(`Daily Streak API listening on http://localhost:${config.port}`);
 });
 
-mongoose.connect(config.mongoUri).then(() => {
-  logger.info('MongoDB connected');
-  reminderJob = startReminderJob();
-  digestJob = startWeeklyDigestJob();
-  syncWorker = startSyncWorker();
-}).catch((error) => {
-  logger.error('Could not connect to MongoDB', error);
-  // Don't exit — keep the server running so health checks can report the
-  // degraded state and operators can fix the URI without losing the process.
-});
+mongoose
+  .connect(config.mongoUri)
+  .then(() => {
+    logger.info('MongoDB connected');
+    reminderJob = startReminderJob();
+    digestJob = startWeeklyDigestJob();
+    syncWorker = startSyncWorker();
+  })
+  .catch((error) => {
+    logger.error('Could not connect to MongoDB', error);
+    // Don't exit — keep the server running so health checks can report the
+    // degraded state and operators can fix the URI without losing the process.
+  });
 
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));

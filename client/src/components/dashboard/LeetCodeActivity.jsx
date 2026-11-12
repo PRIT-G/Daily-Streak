@@ -34,7 +34,12 @@ export default function LeetCodeActivity({ token, username, onOpenSettings }) {
           <p>Recent problems with submission status, difficulty, and topic tags.</p>
         </div>
         {username && (
-          <button type="button" className="small-button" onClick={loadSubmissions} disabled={loading}>
+          <button
+            type="button"
+            className="small-button"
+            onClick={loadSubmissions}
+            disabled={loading}
+          >
             <RefreshCw size={14} /> Refresh
           </button>
         )}
@@ -48,7 +53,9 @@ export default function LeetCodeActivity({ token, username, onOpenSettings }) {
           </button>
         </div>
       )}
-      {username && error && <ActivityMessage error={error} loading={loading} onRetry={loadSubmissions} />}
+      {username && error && (
+        <ActivityMessage error={error} loading={loading} onRetry={loadSubmissions} />
+      )}
       {username && loading && !error && <ActivityMessage loading />}
       {username && data && !loading && (
         <>
@@ -63,11 +70,15 @@ export default function LeetCodeActivity({ token, username, onOpenSettings }) {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      {submission.questionNumber ? `${submission.questionNumber}. ` : ''}{submission.title}
+                      {submission.questionNumber ? `${submission.questionNumber}. ` : ''}
+                      {submission.title}
                       <ArrowUpRight size={13} />
                     </a>
                     <small>
-                      {submission.submittedAt ? new Date(submission.submittedAt).toLocaleString() : 'Date unavailable'} · {submission.language || 'Language unavailable'}
+                      {submission.submittedAt
+                        ? new Date(submission.submittedAt).toLocaleString()
+                        : 'Date unavailable'}{' '}
+                      · {submission.language || 'Language unavailable'}
                     </small>
                     <div className="leetcode-topic-list">
                       {submission.topics.length ? (
@@ -78,7 +89,9 @@ export default function LeetCodeActivity({ token, username, onOpenSettings }) {
                     </div>
                   </div>
                   <div className="leetcode-submission-status">
-                    <strong className={submission.status.toLowerCase() === 'accepted' ? 'accepted' : ''}>
+                    <strong
+                      className={submission.status.toLowerCase() === 'accepted' ? 'accepted' : ''}
+                    >
                       {submission.status}
                     </strong>
                     <span className={`difficulty-${submission.difficulty.toLowerCase()}`}>
@@ -96,4 +109,3 @@ export default function LeetCodeActivity({ token, username, onOpenSettings }) {
     </article>
   );
 }
-

@@ -8,10 +8,12 @@ import { providerConnections, providerRegistry } from '../src/providers/registry
 import { fetchActivityYears, githubSyncYears } from '../src/services/providerService.js';
 
 test('provider connection serialization supports registered and future providers', () => {
-  const connections = providerConnections(new Map([
-    ['github', { username: 'octocat', status: 'synced' }],
-    ['jira', { username: 'workspace', status: 'connected' }]
-  ]));
+  const connections = providerConnections(
+    new Map([
+      ['github', { username: 'octocat', status: 'synced' }],
+      ['jira', { username: 'workspace', status: 'connected' }],
+    ])
+  );
   assert.equal(connections.github.username, 'octocat');
   assert.equal(connections.jira.username, 'workspace');
   assert.equal(connections.leetcode.status, 'not-connected');
@@ -27,13 +29,18 @@ test('GitHub sync includes the current year and four prior years', () => {
 test('yearly provider sync runs bounded batches and combines all activity', async () => {
   let activeRequests = 0;
   let maxActiveRequests = 0;
-  const activity = await fetchActivityYears(async (_username, year) => {
-    activeRequests += 1;
-    maxActiveRequests = Math.max(maxActiveRequests, activeRequests);
-    await new Promise((resolve) => setTimeout(resolve, 2));
-    activeRequests -= 1;
-    return { [`${year}-01-01`]: 1 };
-  }, 'coder', [2026, 2025, 2024, 2023, 2022], 2);
+  const activity = await fetchActivityYears(
+    async (_username, year) => {
+      activeRequests += 1;
+      maxActiveRequests = Math.max(maxActiveRequests, activeRequests);
+      await new Promise((resolve) => setTimeout(resolve, 2));
+      activeRequests -= 1;
+      return { [`${year}-01-01`]: 1 };
+    },
+    'coder',
+    [2026, 2025, 2024, 2023, 2022],
+    2
+  );
 
   assert.equal(maxActiveRequests, 2);
   assert.equal(Object.keys(activity).length, 5);
@@ -56,12 +63,12 @@ test('GitHub adapter imports daily contribution calendar counts', async () => {
         <tool-tip for="day-1">3 contributions on March 1st.</tool-tip>
         <td data-date="2025-03-02" id="day-2" class="ContributionCalendar-day"></td>
         <tool-tip for="day-2">No contributions on March 2nd.</tool-tip>
-      `
+      `,
     };
   };
   assert.deepEqual(await fetchGithubActivity('octocat', fetchMock, 2025), {
     '2025-03-01': 3,
-    '2025-03-02': 0
+    '2025-03-02': 0,
   });
 });
 
@@ -82,7 +89,10 @@ test('GitHub adapter reports rate limits without hiding the failure', async () =
 
 test('GitHub adapter fails explicitly when the contribution calendar is unreadable', async () => {
   const fetchMock = async () => ({ ok: true, text: async () => '<html>Unavailable</html>' });
-  await assert.rejects(() => fetchGithubActivity('octocat', fetchMock), /readable public contribution calendar/i);
+  await assert.rejects(
+    () => fetchGithubActivity('octocat', fetchMock),
+    /readable public contribution calendar/i
+  );
 });
 
 test('LeetCode adapter parses its public calendar into ISO days', async () => {
@@ -93,8 +103,10 @@ test('LeetCode adapter parses its public calendar into ISO days', async () => {
     return {
       ok: true,
       json: async () => ({
-        data: { matchedUser: { userCalendar: { submissionCalendar: JSON.stringify({ [timestamp]: 4 }) } } }
-      })
+        data: {
+          matchedUser: { userCalendar: { submissionCalendar: JSON.stringify({ [timestamp]: 4 }) } },
+        },
+      }),
     };
   };
   assert.deepEqual(await fetchLeetCodeActivity('coder', 2025, fetchMock), { '2025-03-02': 4 });
@@ -116,16 +128,18 @@ test('LeetCode submission adapter includes public status, difficulty, and topic 
         ok: true,
         json: async () => ({
           data: {
-            recentSubmissionList: [{
-              id: '123',
-              title: 'Two Sum',
-              titleSlug: 'two-sum',
-              timestamp: '1740931200',
-              statusDisplay: 'Accepted',
-              lang: 'javascript'
-            }]
-          }
-        })
+            recentSubmissionList: [
+              {
+                id: '123',
+                title: 'Two Sum',
+                titleSlug: 'two-sum',
+                timestamp: '1740931200',
+                statusDisplay: 'Accepted',
+                lang: 'javascript',
+              },
+            ],
+          },
+        }),
       };
     }
     assert.match(body.query, /questionFrontendId/);
@@ -139,10 +153,13 @@ test('LeetCode submission adapter includes public status, difficulty, and topic 
             title: 'Two Sum',
             titleSlug: 'two-sum',
             difficulty: 'Easy',
-            topicTags: [{ name: 'Array', slug: 'array' }, { name: 'Hash Table', slug: 'hash-table' }]
-          }
-        }
-      })
+            topicTags: [
+              { name: 'Array', slug: 'array' },
+              { name: 'Hash Table', slug: 'hash-table' },
+            ],
+          },
+        },
+      }),
     };
   };
   const submissions = await fetchLeetCodeSubmissions('coder', fetchMock);
@@ -156,7 +173,7 @@ test('LeetCode submission adapter includes public status, difficulty, and topic 
     language: 'javascript',
     submittedAt: new Date(1740931200 * 1000).toISOString(),
     difficulty: 'Easy',
-    topics: ['Array', 'Hash Table']
+    topics: ['Array', 'Hash Table'],
   });
 });
 
@@ -170,20 +187,27 @@ test('Codeforces adapter aggregates public submissions by UTC day', async () => 
         result: [
           { creationTimeSeconds: Date.parse('2025-03-02T18:00:00Z') / 1000 },
           { creationTimeSeconds: Date.parse('2025-03-02T08:00:00Z') / 1000 },
-          { creationTimeSeconds: Date.parse('2024-12-31T23:00:00Z') / 1000 }
-        ]
-      })
+          { creationTimeSeconds: Date.parse('2024-12-31T23:00:00Z') / 1000 },
+        ],
+      }),
     };
   };
   assert.deepEqual(await fetchCodeforcesActivity('handle', 2025, fetchMock), { '2025-03-02': 2 });
 });
 
 test('Codeforces adapter reports invalid handles and missing profiles', async () => {
-  await assert.rejects(() => fetchCodeforcesActivity('bad handle', 2025, fetch), /valid Codeforces handle/i);
-  await assert.rejects(() => fetchCodeforcesActivity('missing', 2025, async () => ({
-    ok: true,
-    json: async () => ({ status: 'FAILED', comment: 'handle not found' })
-  })), /handle not found/i);
+  await assert.rejects(
+    () => fetchCodeforcesActivity('bad handle', 2025, fetch),
+    /valid Codeforces handle/i
+  );
+  await assert.rejects(
+    () =>
+      fetchCodeforcesActivity('missing', 2025, async () => ({
+        ok: true,
+        json: async () => ({ status: 'FAILED', comment: 'handle not found' }),
+      })),
+    /handle not found/i
+  );
 });
 
 test('GitLab adapter finds the exact public username and aggregates events', async () => {
@@ -200,18 +224,22 @@ test('GitLab adapter finds the exact public username and aggregates events', asy
       headers: { get: () => '' },
       json: async () => [
         { created_at: '2025-03-02T18:00:00Z', push_data: { commit_count: 3 } },
-        { created_at: '2025-03-02T08:00:00Z', action_name: 'opened' }
-      ]
+        { created_at: '2025-03-02T08:00:00Z', action_name: 'opened' },
+      ],
     };
   };
   assert.deepEqual(await fetchGitLabActivity('coder', 2025, fetchMock), { '2025-03-02': 4 });
 });
 
 test('GitLab adapter reports missing profiles without importing another username', async () => {
-  await assert.rejects(() => fetchGitLabActivity('unknown', 2025, async () => ({
-    ok: true,
-    json: async () => [{ id: 8, username: 'another-user' }]
-  })), /profile not found/i);
+  await assert.rejects(
+    () =>
+      fetchGitLabActivity('unknown', 2025, async () => ({
+        ok: true,
+        json: async () => [{ id: 8, username: 'another-user' }],
+      })),
+    /profile not found/i
+  );
 });
 
 test('GitLab adapter follows pagination and ignores project-join events', async () => {
@@ -223,13 +251,14 @@ test('GitLab adapter follows pagination and ignores project-join events', async 
     const page = parsedUrl.searchParams.get('page');
     return {
       ok: true,
-      headers: { get: () => page === '1' ? '2' : '' },
-      json: async () => page === '1'
-        ? Array.from({ length: 100 }, () => ({
-          created_at: '2025-03-02T18:00:00Z',
-          action_name: 'joined'
-        }))
-        : [{ created_at: '2025-03-03T08:00:00Z', action_name: 'opened' }]
+      headers: { get: () => (page === '1' ? '2' : '') },
+      json: async () =>
+        page === '1'
+          ? Array.from({ length: 100 }, () => ({
+              created_at: '2025-03-02T18:00:00Z',
+              action_name: 'joined',
+            }))
+          : [{ created_at: '2025-03-03T08:00:00Z', action_name: 'opened' }],
     };
   };
   assert.deepEqual(await fetchGitLabActivity('coder', 2025, fetchMock), { '2025-03-03': 1 });

@@ -13,7 +13,7 @@ const publicBadgeLimiter = rateLimit({
   limit: 120,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many requests. Please try again later.' }
+  message: { error: 'Too many requests. Please try again later.' },
 });
 
 router.use(cors({ origin: '*', methods: ['GET'] }));
@@ -21,7 +21,8 @@ router.use(publicBadgeLimiter);
 
 router.get('/:galleryId', async (req, res, next) => {
   const { galleryId } = req.params;
-  if (!galleryKeyPattern.test(galleryId)) return res.status(404).json({ error: 'Badge gallery not found.' });
+  if (!galleryKeyPattern.test(galleryId))
+    return res.status(404).json({ error: 'Badge gallery not found.' });
   try {
     const user = await User.findOne({ publicBadgeGalleryId: galleryId }).select('_id').lean();
     if (!user) return res.status(404).json({ error: 'Badge gallery not found.' });
@@ -35,8 +36,8 @@ router.get('/:galleryId', async (req, res, next) => {
         title: badge.title,
         platform: badge.platform,
         createdAt: badge.createdAt,
-        imageUrl: `/api/public/badges/${galleryId}/${badge._id}/image`
-      }))
+        imageUrl: `/api/public/badges/${galleryId}/${badge._id}/image`,
+      })),
     });
   } catch (error) {
     return next(error);
@@ -63,7 +64,7 @@ router.get('/:galleryId/:badgeId/image', async (req, res, next) => {
       'Content-Disposition': 'inline',
       'Cache-Control': 'public, max-age=60',
       'Cross-Origin-Resource-Policy': 'cross-origin',
-      'X-Content-Type-Options': 'nosniff'
+      'X-Content-Type-Options': 'nosniff',
     });
     return res.status(200).send(image);
   } catch (error) {

@@ -26,7 +26,10 @@ function loginRecord(email) {
 function pruneFailedLogins() {
   const now = Date.now();
   for (const [email, record] of failedLogins) {
-    if (now - record.windowStart > LOGIN_WINDOW_MS && (!record.lockedUntil || record.lockedUntil < now)) {
+    if (
+      now - record.windowStart > LOGIN_WINDOW_MS &&
+      (!record.lockedUntil || record.lockedUntil < now)
+    ) {
       failedLogins.delete(email);
     }
   }
@@ -39,7 +42,7 @@ export function toPublicUser(user) {
     email: user.email,
     providers: providerConnections(user.providers),
     goal: user.goal,
-    reminders: { enabled: user.reminders.enabled, reminderTime: user.reminders.reminderTime }
+    reminders: { enabled: user.reminders.enabled, reminderTime: user.reminders.reminderTime },
   };
 }
 
@@ -66,7 +69,7 @@ export async function refreshSession(refreshToken) {
   if (typeof refreshToken !== 'string' || refreshToken.length < 32) return null;
   const user = await User.findOne({
     refreshTokenHash: hashToken(refreshToken),
-    refreshTokenExpiresAt: { $gt: new Date() }
+    refreshTokenExpiresAt: { $gt: new Date() },
   }).select('+refreshTokenHash +refreshTokenExpiresAt');
   if (!user) return null;
   return issueTokens(user);
@@ -93,7 +96,9 @@ function tokenLink(route, token) {
 
 function emailDeliveryError() {
   return Object.assign(
-    new Error('Your account was created, but the email could not be sent. Please use the resend option or contact support.'),
+    new Error(
+      'Your account was created, but the email could not be sent. Please use the resend option or contact support.'
+    ),
     { status: 503 }
   );
 }
@@ -102,30 +107,32 @@ async function sendVerificationEmail(user, token) {
   await sendAuthEmail({
     to: user.email,
     subject: 'Verify your Daily Streak email',
-    text: `Hi ${user.name},\n\nVerify your email address to sign in to Daily Streak:\n${tokenLink('verify-email', token)}\n\nThis link expires in 24 hours. If you did not create this account, you can ignore this email.`
+    text: `Hi ${user.name},\n\nVerify your email address to sign in to Daily Streak:\n${tokenLink('verify-email', token)}\n\nThis link expires in 24 hours. If you did not create this account, you can ignore this email.`,
   });
 }
 
 export async function registerUser({ name, email, password, earlyAccessConsent }) {
   if (await User.exists({ email })) return { conflict: true };
   const passwordHash = await bcrypt.hash(password, 12);
-  const token = mailConfigured ? newToken() : '';
+  const isProd = process.env.NODE_ENV === 'production';
+  const requireVerification = isProd && mailConfigured;
+  const token = requireVerification ? newToken() : '';
   const user = await User.create({
     name,
     email,
     passwordHash,
     earlyAccessConsent,
-    emailVerified: !mailConfigured,
+    emailVerified: !requireVerification,
     emailVerificationTokenHash: token ? hashToken(token) : '',
-    emailVerificationExpiresAt: token ? new Date(Date.now() + verificationLifetimeMs) : null
+    emailVerificationExpiresAt: token ? new Date(Date.now() + verificationLifetimeMs) : null,
   });
   if (token) {
     try {
       await sendVerificationEmail(user, token);
+      return { verificationRequired: true };
     } catch {
       throw emailDeliveryError();
     }
-    return { verificationRequired: true };
   }
   return issueTokens(user);
 }
@@ -146,7 +153,16 @@ export async function loginUser({ email, password }) {
     return null;
   }
   failedLogins.delete(email);
-  if (user.emailVerified === false) return { verificationRequired: true };
+  if (user.emailVerified === false) {
+    if (process.env.NODE_ENV !== 'production') {
+      user.emailVerified = true;
+      user.emailVerificationTokenHash = '';
+      user.emailVerificationExpiresAt = null;
+      await user.save();
+    } else {
+      return { verificationRequired: true };
+    }
+  }
   return issueTokens(user);
 }
 
@@ -167,7 +183,7 @@ export async function resendVerificationEmail(email) {
 export async function verifyEmail(token) {
   const user = await User.findOne({
     emailVerificationTokenHash: hashToken(token),
-    emailVerificationExpiresAt: { $gt: new Date() }
+    emailVerificationExpiresAt: { $gt: new Date() },
   }).select('+emailVerificationTokenHash +emailVerificationExpiresAt');
   if (!user) return false;
   user.emailVerified = true;
@@ -188,20 +204,23 @@ export async function requestPasswordReset(email) {
     await sendAuthEmail({
       to: user.email,
       subject: 'Reset your Daily Streak password',
-      text: `Hi ${user.name},\n\nReset your Daily Streak password using this link:\n${tokenLink('reset-password', token)}\n\nThis link expires in 30 minutes. If you did not request a reset, you can ignore this email.`
+      text: `Hi ${user.name},\n\nReset your Daily Streak password using this link:\n${tokenLink('reset-password', token)}\n\nThis link expires in 30 minutes. If you did not request a reset, you can ignore this email.`,
     });
   } catch {
     user.passwordResetTokenHash = '';
     user.passwordResetExpiresAt = null;
     await user.save();
-    throw Object.assign(new Error('The password reset email could not be sent. Please try again later.'), { status: 503 });
+    throw Object.assign(
+      new Error('The password reset email could not be sent. Please try again later.'),
+      { status: 503 }
+    );
   }
 }
 
 export async function resetPassword(token, password) {
   const user = await User.findOne({
     passwordResetTokenHash: hashToken(token),
-    passwordResetExpiresAt: { $gt: new Date() }
+    passwordResetExpiresAt: { $gt: new Date() },
   }).select('+passwordResetTokenHash +passwordResetExpiresAt +passwordHash');
   if (!user) return false;
   user.passwordHash = await bcrypt.hash(password, 12);

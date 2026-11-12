@@ -1,4 +1,12 @@
-import { BookOpenCheck, BrainCircuit, Briefcase, CalendarDays, CircleHelp, LayoutDashboard, Trophy } from 'lucide-react';
+import {
+  BookOpenCheck,
+  BrainCircuit,
+  Briefcase,
+  CalendarDays,
+  CircleHelp,
+  LayoutDashboard,
+  Trophy,
+} from 'lucide-react';
 
 export const DASHBOARD_PAGES = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -7,7 +15,7 @@ export const DASHBOARD_PAGES = [
   { id: 'planner', label: 'Study planner', icon: BookOpenCheck },
   { id: 'milestones', label: 'Milestones', icon: Trophy },
   { id: 'work', label: 'Work hub', icon: Briefcase },
-  { id: 'setup', label: 'Setup & startup', icon: CircleHelp }
+  { id: 'setup', label: 'Setup & startup', icon: CircleHelp },
 ];
 
 export function dashboardPageFromHash(hash) {

@@ -13,7 +13,7 @@ import {
   startIntegrationConnect,
   updateJiraAssignee,
   updateJiraIssueStatus,
-  updateNotionTask
+  updateNotionTask,
 } from '../../features/integrations/api.js';
 import WorkSection from './WorkSection.jsx';
 import JiraWorkSection from './JiraWorkSection.jsx';
@@ -22,7 +22,7 @@ import NotionWorkSection from './NotionWorkSection.jsx';
 export default function WorkHub({ token, onNotice }) {
   const [integrations, setIntegrations] = useState({
     jira: { connected: false, configured: false },
-    notion: { connected: false, configured: false }
+    notion: { connected: false, configured: false },
   });
   const [jiraIssues, setJiraIssues] = useState([]);
   const [jiraNextPageToken, setJiraNextPageToken] = useState('');
@@ -38,7 +38,10 @@ export default function WorkHub({ token, onNotice }) {
   const [notionPages, setNotionPages] = useState([]);
   const [notionDatabases, setNotionDatabases] = useState([]);
   const [notionSearchCursors, setNotionSearchCursors] = useState({ pages: '', databases: '' });
-  const [notionSearchHasMore, setNotionSearchHasMore] = useState({ pages: false, databases: false });
+  const [notionSearchHasMore, setNotionSearchHasMore] = useState({
+    pages: false,
+    databases: false,
+  });
   const [notionSearchLoading, setNotionSearchLoading] = useState(false);
   const [notionQuery, setNotionQuery] = useState('');
   const [notionActiveQuery, setNotionActiveQuery] = useState('');
@@ -50,36 +53,44 @@ export default function WorkHub({ token, onNotice }) {
   const [editingTask, setEditingTask] = useState('');
   const [editingTitle, setEditingTitle] = useState('');
 
-  const loadJira = useCallback(async (nextPageToken = '', append = false) => {
-    setJiraLoading(true);
-    try {
-      const data = await getJiraIssues(token, nextPageToken);
-      setJiraIssues((current) => append ? [...current, ...data.issues] : data.issues);
-      setJiraNextPageToken(data.nextPageToken || '');
-    } catch (loadError) {
-      onNotice({ type: 'error', text: loadError.message });
-    } finally {
-      setJiraLoading(false);
-    }
-  }, [onNotice, token]);
+  const loadJira = useCallback(
+    async (nextPageToken = '', append = false) => {
+      setJiraLoading(true);
+      try {
+        const data = await getJiraIssues(token, nextPageToken);
+        setJiraIssues((current) => (append ? [...current, ...data.issues] : data.issues));
+        setJiraNextPageToken(data.nextPageToken || '');
+      } catch (loadError) {
+        onNotice({ type: 'error', text: loadError.message });
+      } finally {
+        setJiraLoading(false);
+      }
+    },
+    [onNotice, token]
+  );
 
-  const loadNotionTasks = useCallback(async (databaseId, cursor = '', append = false) => {
-    setSelectedDatabase(databaseId);
-    setNotionLoading(true);
-    try {
-      const data = await getNotionTasks(token, databaseId, cursor);
-      setNotionData((current) => append && current?.database.id === databaseId
-        ? {
-          ...data,
-          tasks: [...current.tasks, ...data.tasks]
-        }
-        : data);
-    } catch (loadError) {
-      onNotice({ type: 'error', text: loadError.message });
-    } finally {
-      setNotionLoading(false);
-    }
-  }, [onNotice, token]);
+  const loadNotionTasks = useCallback(
+    async (databaseId, cursor = '', append = false) => {
+      setSelectedDatabase(databaseId);
+      setNotionLoading(true);
+      try {
+        const data = await getNotionTasks(token, databaseId, cursor);
+        setNotionData((current) =>
+          append && current?.database.id === databaseId
+            ? {
+                ...data,
+                tasks: [...current.tasks, ...data.tasks],
+              }
+            : data
+        );
+      } catch (loadError) {
+        onNotice({ type: 'error', text: loadError.message });
+      } finally {
+        setNotionLoading(false);
+      }
+    },
+    [onNotice, token]
+  );
 
   useEffect(() => {
     let active = true;
@@ -92,20 +103,28 @@ export default function WorkHub({ token, onNotice }) {
         if (currentIntegrations.notion?.connected) {
           const [pages, databases] = await Promise.all([
             searchNotion(token, '', 'page'),
-            searchNotion(token, '', 'database')
+            searchNotion(token, '', 'database'),
           ]);
           if (!active) return;
           setNotionPages(pages.results);
           setNotionDatabases(databases.results);
-          setNotionSearchCursors({ pages: pages.nextCursor || '', databases: databases.nextCursor || '' });
-          setNotionSearchHasMore({ pages: Boolean(pages.hasMore), databases: Boolean(databases.hasMore) });
+          setNotionSearchCursors({
+            pages: pages.nextCursor || '',
+            databases: databases.nextCursor || '',
+          });
+          setNotionSearchHasMore({
+            pages: Boolean(pages.hasMore),
+            databases: Boolean(databases.hasMore),
+          });
         }
       } catch (loadError) {
         if (active) onNotice({ type: 'error', text: loadError.message });
       }
     }
     load();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [loadJira, onNotice, token]);
 
   useEffect(() => {
@@ -115,9 +134,10 @@ export default function WorkHub({ token, onNotice }) {
     const status = callback.split('-')[1];
     onNotice({
       type: status === 'connected' ? 'success' : 'error',
-      text: status === 'connected'
-        ? `${provider === 'jira' ? 'Jira' : 'Notion'} connected successfully.`
-        : `${provider === 'jira' ? 'Jira' : 'Notion'} connection was not completed.`
+      text:
+        status === 'connected'
+          ? `${provider === 'jira' ? 'Jira' : 'Notion'} connected successfully.`
+          : `${provider === 'jira' ? 'Jira' : 'Notion'} connection was not completed.`,
     });
     window.history.replaceState(null, '', '#work');
   }, [onNotice]);
@@ -139,7 +159,7 @@ export default function WorkHub({ token, onNotice }) {
       await disconnectIntegration(token, provider);
       setIntegrations((current) => ({
         ...current,
-        [provider]: { ...current[provider], connected: false }
+        [provider]: { ...current[provider], connected: false },
       }));
       if (provider === 'jira') setJiraIssues([]);
       if (provider === 'notion') {
@@ -150,7 +170,10 @@ export default function WorkHub({ token, onNotice }) {
         setNotionData(null);
         setSelectedDatabase('');
       }
-      onNotice({ type: 'success', text: `${provider === 'jira' ? 'Jira' : 'Notion'} disconnected.` });
+      onNotice({
+        type: 'success',
+        text: `${provider === 'jira' ? 'Jira' : 'Notion'} disconnected.`,
+      });
     } catch (disconnectError) {
       onNotice({ type: 'error', text: disconnectError.message });
     } finally {
@@ -178,7 +201,7 @@ export default function WorkHub({ token, onNotice }) {
       const result = await runAction(async () => {
         const [pages, databases] = await Promise.all([
           searchNotion(token, query, 'page'),
-          searchNotion(token, query, 'database')
+          searchNotion(token, query, 'database'),
         ]);
         return { pages, databases };
       });
@@ -188,11 +211,11 @@ export default function WorkHub({ token, onNotice }) {
         setNotionDatabases(result.databases.results);
         setNotionSearchCursors({
           pages: result.pages.nextCursor || '',
-          databases: result.databases.nextCursor || ''
+          databases: result.databases.nextCursor || '',
         });
         setNotionSearchHasMore({
           pages: Boolean(result.pages.hasMore),
-          databases: Boolean(result.databases.hasMore)
+          databases: Boolean(result.databases.hasMore),
         });
       }
     } finally {
@@ -225,7 +248,7 @@ export default function WorkHub({ token, onNotice }) {
       if (!result) return;
       setIntegrations((current) => ({
         ...current,
-        jira: { ...current.jira, ...result.site }
+        jira: { ...current.jira, ...result.site },
       }));
       setJiraIssues([]);
       setJiraNextPageToken('');
@@ -291,7 +314,10 @@ export default function WorkHub({ token, onNotice }) {
     if (!newTaskTitle.trim() || !selectedDatabase) return;
     setBusyAction('notion-create');
     const result = await runAction(async () => {
-      await createNotionTask(token, selectedDatabase, { title: newTaskTitle, dueDate: newTaskDueDate });
+      await createNotionTask(token, selectedDatabase, {
+        title: newTaskTitle,
+        dueDate: newTaskDueDate,
+      });
       await loadNotionTasks(selectedDatabase);
       return true;
     }, 'Notion task created.');
@@ -320,7 +346,9 @@ export default function WorkHub({ token, onNotice }) {
           <div className="eyebrow muted-eyebrow">
             <span className="eyebrow-dot" /> YOUR CONNECTED WORKSPACES
           </div>
-          <h1>Work hub<span className="wave">✳</span></h1>
+          <h1>
+            Work hub<span className="wave">✳</span>
+          </h1>
           <p>Bring your Jira work and Notion pages into one focused space.</p>
         </div>
       </div>
@@ -372,7 +400,11 @@ export default function WorkHub({ token, onNotice }) {
         description="Browse shared pages, choose a task database, and create or update tasks."
         connected={integrations.notion.connected}
         configured={integrations.notion.configured}
-        identity={integrations.notion.workspaceName ? `Connected to ${integrations.notion.workspaceName}` : ''}
+        identity={
+          integrations.notion.workspaceName
+            ? `Connected to ${integrations.notion.workspaceName}`
+            : ''
+        }
         onConnect={() => connect('notion')}
         onDisconnect={() => disconnect('notion')}
         loading={busyAction.startsWith('notion-')}

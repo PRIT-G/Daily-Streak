@@ -9,24 +9,27 @@ export default [
   prettier,
   {
     rules: {
-      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }]
-    }
+      'no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+      ],
+    },
   },
   {
     files: ['server/**/*.js', 'server/test/**/*.js'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
-      globals: { ...globals.node }
-    }
+      globals: { ...globals.node },
+    },
   },
   {
     files: ['client/public/sw.js'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
-      globals: { ...globals.serviceworker }
-    }
+      globals: { ...globals.serviceworker },
+    },
   },
   {
     files: ['client/src/**/*.{js,jsx}'],
@@ -35,14 +38,14 @@ export default [
       ecmaVersion: 'latest',
       sourceType: 'module',
       parserOptions: { ecmaFeatures: { jsx: true } },
-      globals: { ...globals.browser }
+      globals: { ...globals.browser },
     },
     settings: { react: { version: 'detect' } },
     rules: {
       ...react.configs.recommended.rules,
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
-      'react/no-unescaped-entities': 'off'
-    }
-  }
+      'react/no-unescaped-entities': 'off',
+    },
+  },
 ];

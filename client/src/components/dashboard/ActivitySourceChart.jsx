@@ -7,7 +7,7 @@ function formatActivityDate(date) {
   return new Date(`${date}T12:00:00`).toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric',
-    year: 'numeric'
+    year: 'numeric',
   });
 }
 
@@ -16,7 +16,7 @@ function formatSyncDate(date) {
   return new Date(date).toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric',
-    year: 'numeric'
+    year: 'numeric',
   });
 }
 
@@ -31,11 +31,14 @@ export default function ActivitySourceChart({ activity, provider, connection = {
   }, 0);
   const latestActivity = activity
     .filter((day) => Number(day.sources?.[provider] ?? day[provider] ?? 0) > 0)
-    .reduce((latest, day) => day.date > latest ? day.date : latest, '');
+    .reduce((latest, day) => (day.date > latest ? day.date : latest), '');
   const label = providerLabel(provider);
 
   return (
-    <section className={`source-chart source-chart-${provider}`} aria-labelledby={`source-chart-${provider}`}>
+    <section
+      className={`source-chart source-chart-${provider}`}
+      aria-labelledby={`source-chart-${provider}`}
+    >
       <header className="source-chart-heading">
         <ProviderMark provider={providerIcon(provider)} />
         <div className="source-chart-title">
@@ -48,12 +51,23 @@ export default function ActivitySourceChart({ activity, provider, connection = {
             {connection.lastSyncedAt && ` · Synced ${formatSyncDate(connection.lastSyncedAt)}`}
           </span>
         </div>
-        <div className="source-chart-summary" aria-label={`${sourceTotal} contributions over ${activeDays} active days`}>
+        <div
+          className="source-chart-summary"
+          aria-label={`${sourceTotal} contributions over ${activeDays} active days`}
+        >
           <strong>{sourceTotal.toLocaleString()}</strong>
-          <span>{activeDays} active {activeDays === 1 ? 'day' : 'days'}</span>
+          <span>
+            {activeDays} active {activeDays === 1 ? 'day' : 'days'}
+          </span>
         </div>
       </header>
-      <Heatmap activity={activity} year={year} target={target} source={provider} sourceLabel={label} />
+      <Heatmap
+        activity={activity}
+        year={year}
+        target={target}
+        source={provider}
+        sourceLabel={label}
+      />
     </section>
   );
 }

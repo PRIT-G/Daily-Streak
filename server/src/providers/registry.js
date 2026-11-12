@@ -12,23 +12,23 @@ export const providerRegistry = {
     label: 'GitHub',
     syncYears: githubSyncYears,
     syncConcurrency: 2,
-    fetchActivity: (username, year) => fetchGithubActivity(username, fetch, year)
+    fetchActivity: (username, year) => fetchGithubActivity(username, fetch, year),
   },
   leetcode: {
     label: 'LeetCode',
     syncYears: (currentYear) => [currentYear],
-    fetchActivity: (username, year) => fetchLeetCodeActivity(username, year)
+    fetchActivity: (username, year) => fetchLeetCodeActivity(username, year),
   },
   codeforces: {
     label: 'Codeforces',
     syncYears: (currentYear) => [currentYear],
-    fetchActivity: (username, year) => fetchCodeforcesActivity(username, year)
+    fetchActivity: (username, year) => fetchCodeforcesActivity(username, year),
   },
   gitlab: {
     label: 'GitLab',
     syncYears: githubSyncYears,
-    fetchActivity: (username, year) => fetchGitLabActivity(username, year)
-  }
+    fetchActivity: (username, year) => fetchGitLabActivity(username, year),
+  },
 };
 
 export const providerAdapters = Object.fromEntries(
@@ -36,9 +36,12 @@ export const providerAdapters = Object.fromEntries(
 );
 
 export function providerConnections(providers) {
-  const connections = providers instanceof Map
-    ? Object.fromEntries([...providers].map(([id, connection]) => [id, connection?.toObject?.() || connection]))
-    : { ...(providers || {}) };
+  const connections =
+    providers instanceof Map
+      ? Object.fromEntries(
+          [...providers].map(([id, connection]) => [id, connection?.toObject?.() || connection])
+        )
+      : { ...(providers || {}) };
 
   for (const [id] of Object.entries(providerRegistry)) {
     connections[id] ||= { username: '', status: 'not-connected', message: '', lastSyncedAt: null };

@@ -12,15 +12,20 @@ const allowedTypes = new Set(['image/png', 'image/jpeg', 'image/webp']);
 
 function imageMatchesType(buffer, type) {
   if (type === 'image/png') {
-    return buffer.length >= 8 &&
-      buffer.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+    return (
+      buffer.length >= 8 &&
+      buffer.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+    );
   }
   if (type === 'image/jpeg') {
     return buffer.length >= 3 && buffer[0] === 255 && buffer[1] === 216 && buffer[2] === 255;
   }
-  return type === 'image/webp' && buffer.length >= 12 &&
+  return (
+    type === 'image/webp' &&
+    buffer.length >= 12 &&
     buffer.toString('ascii', 0, 4) === 'RIFF' &&
-    buffer.toString('ascii', 8, 12) === 'WEBP';
+    buffer.toString('ascii', 8, 12) === 'WEBP'
+  );
 }
 
 function badgeResponse(badge) {
@@ -30,7 +35,7 @@ function badgeResponse(badge) {
     platform: badge.platform,
     imageType: badge.imageType,
     imageData: badge.imageData,
-    createdAt: badge.createdAt
+    createdAt: badge.createdAt,
   };
 }
 
@@ -79,9 +84,7 @@ router.delete('/gallery', async (req, res, next) => {
 
 router.get('/', async (req, res, next) => {
   try {
-    const badges = await UploadedBadge.find({ userId: req.userId })
-      .sort({ createdAt: -1 })
-      .lean();
+    const badges = await UploadedBadge.find({ userId: req.userId }).sort({ createdAt: -1 }).lean();
     return res.json({ badges: badges.map(badgeResponse) });
   } catch (error) {
     return next(error);
@@ -104,7 +107,7 @@ router.get('/:badgeId/image', async (req, res, next) => {
       'Content-Length': image.length,
       'Content-Disposition': 'inline',
       'Cache-Control': 'private, no-store',
-      'X-Content-Type-Options': 'nosniff'
+      'X-Content-Type-Options': 'nosniff',
     });
     return res.status(200).send(image);
   } catch (error) {
@@ -146,7 +149,7 @@ router.post('/', async (req, res, next) => {
       title: title.trim(),
       platform: platform.trim(),
       imageType,
-      imageData
+      imageData,
     });
     return res.status(201).json({ badge: badgeResponse(badge) });
   } catch (error) {
@@ -159,7 +162,10 @@ router.delete('/:badgeId', async (req, res, next) => {
     return res.status(400).json({ error: 'Badge id is invalid.' });
   }
   try {
-    const badge = await UploadedBadge.findOneAndDelete({ _id: req.params.badgeId, userId: req.userId });
+    const badge = await UploadedBadge.findOneAndDelete({
+      _id: req.params.badgeId,
+      userId: req.userId,
+    });
     if (!badge) return res.status(404).json({ error: 'Badge not found.' });
     return res.status(204).end();
   } catch (error) {

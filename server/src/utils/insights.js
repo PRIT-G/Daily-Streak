@@ -7,7 +7,7 @@ const STALE_SYNC_MS = 7 * 24 * 60 * 60 * 1000;
 const STREAK_MILESTONES = [
   { threshold: 7, title: 'Week on fire' },
   { threshold: 14, title: 'Two-week rhythm' },
-  { threshold: 30, title: 'Month maker' }
+  { threshold: 30, title: 'Month maker' },
 ];
 
 function shiftDate(dateKey, amount) {
@@ -32,7 +32,10 @@ function shiftIso(dateKey, amount) {
 
 function formatForecastDate(dateKey) {
   return new Date(`${dateKey}T00:00:00.000Z`).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC'
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
   });
 }
 
@@ -75,7 +78,7 @@ function buildPrediction(byDate, todayKey, streaks, target) {
       return {
         streakDays: threshold,
         daysNeeded,
-        estimatedDate: daysNeeded === null ? null : shiftIso(todayKey, daysNeeded)
+        estimatedDate: daysNeeded === null ? null : shiftIso(todayKey, daysNeeded),
       };
     })
     .filter((item) => item.daysNeeded !== null && item.daysNeeded <= 365)
@@ -87,8 +90,8 @@ function buildPrediction(byDate, todayKey, streaks, target) {
     trend: slope > 0.05 ? 'improving' : slope < -0.05 ? 'declining' : 'steady',
     forecasts: forecasts.map((item) => ({
       ...item,
-      estimatedDateLabel: item.estimatedDate ? formatForecastDate(item.estimatedDate) : null
-    }))
+      estimatedDateLabel: item.estimatedDate ? formatForecastDate(item.estimatedDate) : null,
+    })),
   };
 }
 
@@ -96,8 +99,10 @@ function buildAnomaly(byDate, todayKey) {
   // Compare the last 30 days against the previous 30 days.
   const recent = [];
   const prior = [];
-  for (let offset = 29; offset >= 0; offset -= 1) recent.push(dayTotal(byDate.get(shiftIso(todayKey, -offset)) || {}));
-  for (let offset = 59; offset >= 30; offset -= 1) prior.push(dayTotal(byDate.get(shiftIso(todayKey, -offset)) || {}));
+  for (let offset = 29; offset >= 0; offset -= 1)
+    recent.push(dayTotal(byDate.get(shiftIso(todayKey, -offset)) || {}));
+  for (let offset = 59; offset >= 30; offset -= 1)
+    prior.push(dayTotal(byDate.get(shiftIso(todayKey, -offset)) || {}));
   const recentSum = recent.reduce((sum, value) => sum + value, 0);
   const priorSum = prior.reduce((sum, value) => sum + value, 0);
   if (priorSum === 0) {
@@ -112,9 +117,10 @@ function buildAnomaly(byDate, todayKey) {
     detected: true,
     direction,
     changePercent,
-    message: direction === 'down'
-      ? `Activity dropped ${Math.abs(changePercent)}% versus the previous 30 days.`
-      : `Activity is up ${changePercent}% versus the previous 30 days — great momentum.`
+    message:
+      direction === 'down'
+        ? `Activity dropped ${Math.abs(changePercent)}% versus the previous 30 days.`
+        : `Activity is up ${changePercent}% versus the previous 30 days — great momentum.`,
   };
 }
 
@@ -138,9 +144,10 @@ function buildGoalSuggestion(byDate, todayKey, currentTarget) {
     activeDays: totals.length,
     currentHitRate: Math.round(currentHitRate * 100),
     suggestedHitRate: Math.round(suggestedHitRate * 100),
-    message: suggestion > currentTarget
-      ? `Your median active day is ${suggestion} items — consider raising your goal to ${suggestion}.`
-      : `Your median active day is ${suggestion} items — a goal of ${suggestion} is more achievable than ${currentTarget}.`
+    message:
+      suggestion > currentTarget
+        ? `Your median active day is ${suggestion} items — consider raising your goal to ${suggestion}.`
+        : `Your median active day is ${suggestion} items — a goal of ${suggestion} is more achievable than ${currentTarget}.`,
   };
 }
 
@@ -178,8 +185,12 @@ export function buildInsights(days, dailyTarget, streaks, providers, now = new D
 
   const thisWeekKeys = windowKeys(todayKey, 7);
   const lastWeekKeys = windowKeys(shiftDate(todayKey, -7), 7);
-  const countGoalDays = (keys) => keys.filter((key) => dayTotal(byDate.get(key) || {}) >= target).length;
-  const weekComparison = { thisWeek: countGoalDays(thisWeekKeys), lastWeek: countGoalDays(lastWeekKeys) };
+  const countGoalDays = (keys) =>
+    keys.filter((key) => dayTotal(byDate.get(key) || {}) >= target).length;
+  const weekComparison = {
+    thisWeek: countGoalDays(thisWeekKeys),
+    lastWeek: countGoalDays(lastWeekKeys),
+  };
 
   const todayTotal = dayTotal(byDate.get(todayKey) || {});
   const todayMet = todayTotal >= target;
@@ -187,10 +198,13 @@ export function buildInsights(days, dailyTarget, streaks, providers, now = new D
   const streakAtRisk = currentStreak > 0 && !todayMet;
 
   const longestStreak = Number(streaks?.longest) || 0;
-  const nextMilestone = STREAK_MILESTONES.find((milestone) => longestStreak < milestone.threshold) || null;
+  const nextMilestone =
+    STREAK_MILESTONES.find((milestone) => longestStreak < milestone.threshold) || null;
 
   const connections = providers && typeof providers === 'object' ? providers : {};
-  const connectedProviders = Object.entries(connections).filter(([, connection]) => connection?.username);
+  const connectedProviders = Object.entries(connections).filter(
+    ([, connection]) => connection?.username
+  );
   const staleProviders = connectedProviders
     .filter(([, connection]) => {
       const syncedAt = connection?.lastSyncedAt ? new Date(connection.lastSyncedAt).getTime() : 0;
@@ -202,48 +216,48 @@ export function buildInsights(days, dailyTarget, streaks, providers, now = new D
   if (connectedProviders.length === 0) {
     recommendations.push({
       id: 'connect-provider',
-      text: 'Connect a coding profile in Settings to start automatic activity tracking.'
+      text: 'Connect a coding profile in Settings to start automatic activity tracking.',
     });
   }
   if (streakAtRisk) {
     recommendations.push({
       id: 'protect-streak',
-      text: `Log some activity today to protect your ${currentStreak}-day streak.`
+      text: `Log some activity today to protect your ${currentStreak}-day streak.`,
     });
   } else if (currentStreak > 0 && todayMet) {
     recommendations.push({
       id: 'streak-alive',
-      text: `Your ${currentStreak}-day streak is safe for today. Consistency beats intensity.`
+      text: `Your ${currentStreak}-day streak is safe for today. Consistency beats intensity.`,
     });
   }
   if (activeDays > 0 && consistencyScore < 40) {
     recommendations.push({
       id: 'build-consistency',
-      text: `You hit your goal on ${goalDays} of the last ${WINDOW_DAYS} days. Small daily sessions build the strongest streaks.`
+      text: `You hit your goal on ${goalDays} of the last ${WINDOW_DAYS} days. Small daily sessions build the strongest streaks.`,
     });
   }
   if (weekComparison.thisWeek < weekComparison.lastWeek && weekComparison.lastWeek > 0) {
     recommendations.push({
       id: 'week-comeback',
-      text: `This week is behind last week (${weekComparison.thisWeek} vs ${weekComparison.lastWeek} goal days). One focused session closes the gap.`
+      text: `This week is behind last week (${weekComparison.thisWeek} vs ${weekComparison.lastWeek} goal days). One focused session closes the gap.`,
     });
   }
   if (busiestSource.length > 0 && connectedProviders.length > 0 && connectedProviders.length < 2) {
     recommendations.push({
       id: 'diversify-sources',
-      text: 'Most of your activity comes from a single source. Connect another provider for a fuller picture.'
+      text: 'Most of your activity comes from a single source. Connect another provider for a fuller picture.',
     });
   }
   if (goalDays === WINDOW_DAYS) {
     recommendations.push({
       id: 'raise-goal',
-      text: 'A perfect 30 days. Consider raising your daily target to keep growing.'
+      text: 'A perfect 30 days. Consider raising your daily target to keep growing.',
     });
   }
   if (activeDays === 0 && connectedProviders.length > 0) {
     recommendations.push({
       id: 'first-activity',
-      text: 'No activity recorded yet this month. Your first synced day starts the journey.'
+      text: 'No activity recorded yet this month. Your first synced day starts the journey.',
     });
   }
 
@@ -277,7 +291,7 @@ export function buildInsights(days, dailyTarget, streaks, providers, now = new D
     recommendations: recommendations.slice(0, 4),
     dataQuality: {
       connectedProviders: connectedProviders.length,
-      staleProviders
-    }
+      staleProviders,
+    },
   };
 }

@@ -1,19 +1,12 @@
 import { useEffect, useState } from 'react';
-import {
-  ArrowLeft,
-  ArrowRight,
-  ArrowUpRight,
-  LoaderCircle,
-  RefreshCw,
-  Unlink
-} from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowUpRight, LoaderCircle, RefreshCw, Unlink } from 'lucide-react';
 import {
   disconnectIntegration,
   getGithubActivity,
   getGithubPrivateActivity,
   getGithubPrivateRepositories,
   getIntegrationStatuses,
-  startIntegrationConnect
+  startIntegrationConnect,
 } from '../../features/integrations/api.js';
 import ActivityMessage from './ActivityMessage.jsx';
 
@@ -22,7 +15,7 @@ export default function GitHubActivity({ token }) {
     connected: false,
     configured: false,
     callbackUrl: '',
-    privateAccess: false
+    privateAccess: false,
   });
   const [data, setData] = useState(null);
   const [privateRepositories, setPrivateRepositories] = useState([]);
@@ -67,7 +60,11 @@ export default function GitHubActivity({ token }) {
       try {
         const { integrations } = await getIntegrationStatuses(token);
         if (!active) return;
-        const github = integrations.github || { connected: false, configured: false, privateAccess: false };
+        const github = integrations.github || {
+          connected: false,
+          configured: false,
+          privateAccess: false,
+        };
         setIntegration(github);
         if (github.connected) {
           setLoading(true);
@@ -97,14 +94,18 @@ export default function GitHubActivity({ token }) {
       }
     }
     load();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [token]);
 
   async function connect(includePrivateRepositories = false) {
     setBusy(true);
     setError('');
     try {
-      const { url } = await startIntegrationConnect(token, 'github', { includePrivateRepositories });
+      const { url } = await startIntegrationConnect(token, 'github', {
+        includePrivateRepositories,
+      });
       window.location.assign(url);
     } catch (connectError) {
       setError(connectError.message);
@@ -138,25 +139,45 @@ export default function GitHubActivity({ token }) {
         </div>
         {integration.connected ? (
           <div className="provider-activity-actions">
-            <button type="button" className="small-button" onClick={loadActivity} disabled={loading || busy}>
-              {loading ? <LoaderCircle className="spin" size={14} /> : <RefreshCw size={14} />} Refresh
+            <button
+              type="button"
+              className="small-button"
+              onClick={loadActivity}
+              disabled={loading || busy}
+            >
+              {loading ? <LoaderCircle className="spin" size={14} /> : <RefreshCw size={14} />}{' '}
+              Refresh
             </button>
             <button type="button" className="small-button" onClick={disconnect} disabled={busy}>
               <Unlink size={14} /> Disconnect
             </button>
           </div>
         ) : integration.configured ? (
-          <button type="button" className="button button-dark" onClick={() => connect(includePrivateOnConnect)} disabled={busy}>
-            {busy ? <LoaderCircle className="spin" size={14} /> : <ArrowUpRight size={14} />} Connect GitHub
+          <button
+            type="button"
+            className="button button-dark"
+            onClick={() => connect(includePrivateOnConnect)}
+            disabled={busy}
+          >
+            {busy ? <LoaderCircle className="spin" size={14} /> : <ArrowUpRight size={14} />}{' '}
+            Connect GitHub
           </button>
         ) : (
           <span className="setup-config-tag optional">Not enabled yet</span>
         )}
       </header>
-      {error && <div className="provider-activity-error" role="alert">{error}</div>}
+      {error && (
+        <div className="provider-activity-error" role="alert">
+          {error}
+        </div>
+      )}
       {!integration.connected && (
         <div className="provider-activity-empty">
-          <strong>{integration.configured ? 'Connect your GitHub account' : 'GitHub connection is not enabled yet'}</strong>
+          <strong>
+            {integration.configured
+              ? 'Connect your GitHub account'
+              : 'GitHub connection is not enabled yet'}
+          </strong>
           <p>
             {integration.configured
               ? 'Public activity is the default. Private repositories are never queried unless you opt in here; you can also add personal activity entries in the Private activity tab.'
@@ -171,7 +192,11 @@ export default function GitHubActivity({ token }) {
               />
               <span>
                 <strong>Allow access to my private repositories</strong>
-                <small>Optional. GitHub’s <code>repo</code> scope is broad and may grant write-capable permissions. We only make read requests. Private data is loaded only for repositories you select.</small>
+                <small>
+                  Optional. GitHub’s <code>repo</code> scope is broad and may grant write-capable
+                  permissions. We only make read requests. Private data is loaded only for
+                  repositories you select.
+                </small>
               </span>
             </label>
           )}
@@ -180,7 +205,10 @@ export default function GitHubActivity({ token }) {
       {integration.connected && !integration.privateAccess && (
         <div className="provider-activity-empty private-repository-consent-panel">
           <strong>Private repositories are off</strong>
-          <p>Your current GitHub connection does not request private repository access. This is optional and requires a new GitHub authorization.</p>
+          <p>
+            Your current GitHub connection does not request private repository access. This is
+            optional and requires a new GitHub authorization.
+          </p>
           <label className="private-repository-consent">
             <input
               type="checkbox"
@@ -189,7 +217,10 @@ export default function GitHubActivity({ token }) {
             />
             <span>
               <strong>Allow access to my private repositories</strong>
-              <small>GitHub’s <code>repo</code> scope is broad and may grant write-capable permissions. The app only makes read requests and only loads repositories you select.</small>
+              <small>
+                GitHub’s <code>repo</code> scope is broad and may grant write-capable permissions.
+                The app only makes read requests and only loads repositories you select.
+              </small>
             </span>
           </label>
           <button
@@ -198,7 +229,8 @@ export default function GitHubActivity({ token }) {
             onClick={() => connect(true)}
             disabled={!includePrivateOnConnect || busy}
           >
-            {busy ? <LoaderCircle className="spin" size={14} /> : <ArrowUpRight size={14} />} Enable private repository access
+            {busy ? <LoaderCircle className="spin" size={14} /> : <ArrowUpRight size={14} />} Enable
+            private repository access
           </button>
         </div>
       )}
@@ -213,7 +245,7 @@ export default function GitHubActivity({ token }) {
               ['Issues', data.summary.issues],
               ['Merged', data.summary.merged],
               ['Conflicts detected', data.summary.conflicts],
-              ['Repositories', data.summary.repositories]
+              ['Repositories', data.summary.repositories],
             ].map(([label, value]) => (
               <div key={label}>
                 <strong>{value}</strong>
@@ -224,7 +256,11 @@ export default function GitHubActivity({ token }) {
           <p className="provider-activity-limitation">{data.limitations}</p>
           <div className="provider-activity-repositories">
             <strong>Repositories in this activity window</strong>
-            <p>{data.repositories.length ? data.repositories.join(' · ') : 'No repositories returned.'}</p>
+            <p>
+              {data.repositories.length
+                ? data.repositories.join(' · ')
+                : 'No repositories returned.'}
+            </p>
           </div>
           <div className="provider-event-list">
             {data.events.map((event) => (
@@ -233,12 +269,19 @@ export default function GitHubActivity({ token }) {
                 <div className="provider-event-copy">
                   <strong>{event.summary || event.type}</strong>
                   <small>
-                    {event.repository || 'GitHub'} · {event.createdAt ? new Date(event.createdAt).toLocaleString() : 'Date unavailable'}
+                    {event.repository || 'GitHub'} ·{' '}
+                    {event.createdAt
+                      ? new Date(event.createdAt).toLocaleString()
+                      : 'Date unavailable'}
                   </small>
                   {event.pullRequest && (
                     <small>
-                      PR #{event.pullRequest.number} · {event.pullRequest.merged ? 'Merged' : event.pullRequest.state || 'Status unavailable'}
-                      {event.pullRequest.mergeable === false || event.pullRequest.mergeableState === 'dirty'
+                      PR #{event.pullRequest.number} ·{' '}
+                      {event.pullRequest.merged
+                        ? 'Merged'
+                        : event.pullRequest.state || 'Status unavailable'}
+                      {event.pullRequest.mergeable === false ||
+                      event.pullRequest.mergeableState === 'dirty'
                         ? ' · Merge conflicts detected'
                         : event.pullRequest.mergeable === true
                           ? ' · Mergeable'
@@ -269,7 +312,10 @@ export default function GitHubActivity({ token }) {
               <header>
                 <div>
                   <strong>Selected private repositories</strong>
-                  <p>Choose up to 5 repositories. Only your commits and pull requests in those repositories are loaded.</p>
+                  <p>
+                    Choose up to 5 repositories. Only your commits and pull requests in those
+                    repositories are loaded.
+                  </p>
                 </div>
                 <div className="private-repository-pagination">
                   <button
@@ -301,13 +347,20 @@ export default function GitHubActivity({ token }) {
                         <input
                           type="checkbox"
                           checked={selectedRepositories.includes(repository.fullName)}
-                          onChange={(event) => setSelectedRepositories((current) => event.target.checked
-                            ? [...current, repository.fullName].slice(-5)
-                            : current.filter((name) => name !== repository.fullName))}
+                          onChange={(event) =>
+                            setSelectedRepositories((current) =>
+                              event.target.checked
+                                ? [...current, repository.fullName].slice(-5)
+                                : current.filter((name) => name !== repository.fullName)
+                            )
+                          }
                         />
                         <span>
                           <strong>{repository.fullName}</strong>
-                          <small>{repository.description || `Updated ${repository.pushedAt ? new Date(repository.pushedAt).toLocaleDateString() : 'date unavailable'}`}</small>
+                          <small>
+                            {repository.description ||
+                              `Updated ${repository.pushedAt ? new Date(repository.pushedAt).toLocaleDateString() : 'date unavailable'}`}
+                          </small>
                         </span>
                       </label>
                     ))}
@@ -320,7 +373,9 @@ export default function GitHubActivity({ token }) {
                       setPrivateLoading(true);
                       setError('');
                       try {
-                        setPrivateActivity(await getGithubPrivateActivity(token, selectedRepositories));
+                        setPrivateActivity(
+                          await getGithubPrivateActivity(token, selectedRepositories)
+                        );
                       } catch (loadError) {
                         setError(loadError.message);
                       } finally {
@@ -328,7 +383,11 @@ export default function GitHubActivity({ token }) {
                       }
                     }}
                   >
-                    {privateLoading ? <LoaderCircle className="spin" size={14} /> : <RefreshCw size={14} />}
+                    {privateLoading ? (
+                      <LoaderCircle className="spin" size={14} />
+                    ) : (
+                      <RefreshCw size={14} />
+                    )}
                     Load selected private activity
                   </button>
                 </>
@@ -343,7 +402,7 @@ export default function GitHubActivity({ token }) {
                       ['Private repos', privateActivity.summary.repositories],
                       ['Commits', privateActivity.summary.commits],
                       ['Pull requests', privateActivity.summary.pullRequests],
-                      ['Merged', privateActivity.summary.merged]
+                      ['Merged', privateActivity.summary.merged],
                     ].map(([label, value]) => (
                       <div key={label}>
                         <strong>{value}</strong>
@@ -353,14 +412,24 @@ export default function GitHubActivity({ token }) {
                   </div>
                   <div className="provider-event-list">
                     {privateActivity.events.map((event) => (
-                      <article className="provider-event-row" key={`${event.repository}-${event.id}`}>
+                      <article
+                        className="provider-event-row"
+                        key={`${event.repository}-${event.id}`}
+                      >
                         <span className="provider-event-marker" />
                         <div className="provider-event-copy">
                           <strong>{event.summary}</strong>
                           <small>
-                            {event.repository} · {event.type} · {event.createdAt ? new Date(event.createdAt).toLocaleString() : 'Date unavailable'}
+                            {event.repository} · {event.type} ·{' '}
+                            {event.createdAt
+                              ? new Date(event.createdAt).toLocaleString()
+                              : 'Date unavailable'}
                           </small>
-                          {event.number && <small>PR #{event.number} · {event.state}</small>}
+                          {event.number && (
+                            <small>
+                              PR #{event.number} · {event.state}
+                            </small>
+                          )}
                         </div>
                         {event.url && (
                           <a
@@ -386,4 +455,3 @@ export default function GitHubActivity({ token }) {
     </article>
   );
 }
-

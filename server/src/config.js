@@ -1,23 +1,33 @@
 import dotenv from 'dotenv';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { randomBytes } from 'node:crypto';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-if (process.env.NODE_ENV === 'production' &&
-    (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32 || process.env.JWT_SECRET === 'replace-this-with-a-long-random-secret')) {
+if (
+  process.env.NODE_ENV === 'production' &&
+  (!process.env.JWT_SECRET ||
+    process.env.JWT_SECRET.length < 32 ||
+    process.env.JWT_SECRET === 'replace-this-with-a-long-random-secret')
+) {
   throw new Error('Production requires a private JWT_SECRET of at least 32 characters.');
 }
 
 // Auto-generate a valid 64-char hex encryption key when OAuth integrations are
 // configured but no key was supplied. This keeps Render deploys working out of
 // the box while still allowing operators to override via env vars.
-const needsEncryptionKey = process.env.NODE_ENV === 'production' &&
+const needsEncryptionKey =
+  process.env.NODE_ENV === 'production' &&
   (process.env.INTEGRATION_ADMIN_SECRET ||
-   process.env.JIRA_CLIENT_ID ||
-   process.env.NOTION_CLIENT_ID ||
-   process.env.GITHUB_CLIENT_ID);
+    process.env.JIRA_CLIENT_ID ||
+    process.env.NOTION_CLIENT_ID ||
+    process.env.GITHUB_CLIENT_ID);
 
-const encryptionKey = process.env.INTEGRATION_TOKEN_ENCRYPTION_KEY ||
+const encryptionKey =
+  process.env.INTEGRATION_TOKEN_ENCRYPTION_KEY ||
   (needsEncryptionKey ? randomBytes(32).toString('hex') : '');
 
 export const config = {
@@ -37,7 +47,7 @@ export const config = {
     notionClientId: process.env.NOTION_CLIENT_ID || '',
     notionClientSecret: process.env.NOTION_CLIENT_SECRET || '',
     githubClientId: process.env.GITHUB_CLIENT_ID || '',
-    githubClientSecret: process.env.GITHUB_CLIENT_SECRET || ''
+    githubClientSecret: process.env.GITHUB_CLIENT_SECRET || '',
   },
   smtp: {
     host: process.env.SMTP_HOST,
@@ -45,25 +55,35 @@ export const config = {
     secure: process.env.SMTP_SECURE === 'true',
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
-    from: process.env.MAIL_FROM || 'Daily Streak <noreply@example.com>'
-  }
+    from: process.env.MAIL_FROM || 'Daily Streak <noreply@example.com>',
+  },
 };
 
 export const mailConfigured = Boolean(config.smtp.host && config.smtp.user && config.smtp.pass);
 
 if (process.env.NODE_ENV === 'production' && !mailConfigured) {
-  throw new Error('Production requires SMTP_HOST, SMTP_USER, and SMTP_PASS for email verification and account recovery.');
+  throw new Error(
+    'Production requires SMTP_HOST, SMTP_USER, and SMTP_PASS for email verification and account recovery.'
+  );
 }
 
-if (process.env.NODE_ENV === 'production' &&
-    (config.integrations.adminSecret || config.integrations.jiraClientId ||
-      config.integrations.notionClientId || config.integrations.githubClientId) &&
-    !/^[a-f\d]{64}$/i.test(config.integrations.encryptionKey)) {
-  throw new Error('Production OAuth integrations require a 32-byte hex INTEGRATION_TOKEN_ENCRYPTION_KEY.');
+if (
+  process.env.NODE_ENV === 'production' &&
+  (config.integrations.adminSecret ||
+    config.integrations.jiraClientId ||
+    config.integrations.notionClientId ||
+    config.integrations.githubClientId) &&
+  !/^[a-f\d]{64}$/i.test(config.integrations.encryptionKey)
+) {
+  throw new Error(
+    'Production OAuth integrations require a 32-byte hex INTEGRATION_TOKEN_ENCRYPTION_KEY.'
+  );
 }
 
-if (process.env.NODE_ENV === 'production' &&
-    config.integrations.adminSecret &&
-    config.integrations.adminSecret.length < 32) {
+if (
+  process.env.NODE_ENV === 'production' &&
+  config.integrations.adminSecret &&
+  config.integrations.adminSecret.length < 32
+) {
   throw new Error('INTEGRATION_ADMIN_SECRET must contain at least 32 characters in production.');
 }

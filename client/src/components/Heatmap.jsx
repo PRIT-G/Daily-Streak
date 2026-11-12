@@ -14,7 +14,11 @@ export default function Heatmap({ activity = [], year, target, source, sourceLab
     const monthLabels = [];
     let activeDays = 0;
     let monthFound = new Set();
-    for (let cursor = new Date(first); cursor <= finish; cursor.setUTCDate(cursor.getUTCDate() + 7)) {
+    for (
+      let cursor = new Date(first);
+      cursor <= finish;
+      cursor.setUTCDate(cursor.getUTCDate() + 7)
+    ) {
       const week = [];
       for (let offset = 0; offset < 7; offset += 1) {
         const date = new Date(cursor);
@@ -47,7 +51,11 @@ export default function Heatmap({ activity = [], year, target, source, sourceLab
       if ((day.total || 0) >= target) stats[weekday].hits += 1;
     }
     const scored = stats
-      .map((stat, index) => ({ ...stat, weekday: index, rate: stat.total ? stat.hits / stat.total : 0 }))
+      .map((stat, index) => ({
+        ...stat,
+        weekday: index,
+        rate: stat.total ? stat.hits / stat.total : 0,
+      }))
       .filter((stat) => stat.total >= 3);
     if (!scored.length) return null;
     const best = scored.reduce((a, b) => (b.rate > a.rate ? b : a));
@@ -59,15 +67,28 @@ export default function Heatmap({ activity = [], year, target, source, sourceLab
   return (
     <div className="heatmap-wrap">
       <div className="month-labels" aria-hidden="true">
-        {labels.map((month) => <span key={month.label} style={{ gridColumn: month.week + 1 }}>{month.label}</span>)}
+        {labels.map((month) => (
+          <span key={month.label} style={{ gridColumn: month.week + 1 }}>
+            {month.label}
+          </span>
+        ))}
       </div>
       <div className="heatmap-layout">
-        <div className="weekday-labels" aria-hidden="true">{DAYS.map((day, index) => <span key={day}>{index % 2 === 0 ? day : ''}</span>)}</div>
-        <div className={`heatmap-grid${source ? ` source-heatmap source-heatmap-${source}` : ''}`} role="grid" aria-label={`${year} ${sourceLabel} activity calendar, ${totalDays} goal days`}>
+        <div className="weekday-labels" aria-hidden="true">
+          {DAYS.map((day, index) => (
+            <span key={day}>{index % 2 === 0 ? day : ''}</span>
+          ))}
+        </div>
+        <div
+          className={`heatmap-grid${source ? ` source-heatmap source-heatmap-${source}` : ''}`}
+          role="grid"
+          aria-label={`${year} ${sourceLabel} activity calendar, ${totalDays} goal days`}
+        >
           {weeks.map((week, weekIndex) => (
             <div className="heatmap-week" role="row" key={weekIndex}>
               {week.map((day, dayIndex) => {
-                const level = day.count === 0 ? 0 : day.count >= target * 2 ? 4 : day.count >= target ? 3 : 1;
+                const level =
+                  day.count === 0 ? 0 : day.count >= target * 2 ? 4 : day.count >= target ? 3 : 1;
                 return (
                   <span
                     className={`heat-cell level-${level}${day.isFuture || !day.inYear ? ' is-future' : ''}`}
@@ -84,12 +105,24 @@ export default function Heatmap({ activity = [], year, target, source, sourceLab
       </div>
       <div className="heatmap-footer">
         <span>{totalDays} days hit your goal</span>
-        <div className="legend"><span>Less</span>{[0, 1, 2, 3, 4].map((level) => <i className={`heat-cell level-${level}`} key={level} />)}<span>More</span></div>
+        <div className="legend">
+          <span>Less</span>
+          {[0, 1, 2, 3, 4].map((level) => (
+            <i className={`heat-cell level-${level}`} key={level} />
+          ))}
+          <span>More</span>
+        </div>
       </div>
       {weekdayPatterns && (
         <div className="weekday-patterns" aria-label="Weekday activity patterns">
-          <span className="weekday-pattern best">Strongest: {DAYS[weekdayPatterns.best.weekday]}s ({Math.round(weekdayPatterns.best.rate * 100)}% goal days)</span>
-          <span className="weekday-pattern weak">Weakest: {DAYS[weekdayPatterns.worst.weekday]}s ({Math.round(weekdayPatterns.worst.rate * 100)}% goal days)</span>
+          <span className="weekday-pattern best">
+            Strongest: {DAYS[weekdayPatterns.best.weekday]}s (
+            {Math.round(weekdayPatterns.best.rate * 100)}% goal days)
+          </span>
+          <span className="weekday-pattern weak">
+            Weakest: {DAYS[weekdayPatterns.worst.weekday]}s (
+            {Math.round(weekdayPatterns.worst.rate * 100)}% goal days)
+          </span>
         </div>
       )}
     </div>

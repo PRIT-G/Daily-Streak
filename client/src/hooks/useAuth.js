@@ -9,8 +9,10 @@ export function clearStoredSession() {
 }
 
 export function isMissingAccountError(error) {
-  return error.status === 401 ||
-    (error.status === 404 && /account (?:no longer exists|not found)/i.test(error.message));
+  return (
+    error.status === 401 ||
+    (error.status === 404 && /account (?:no longer exists|not found)/i.test(error.message))
+  );
 }
 
 export function useAuth() {
@@ -20,18 +22,25 @@ export function useAuth() {
   const [authNotice, setAuthNotice] = useState('');
   const [authNoticeType, setAuthNoticeType] = useState('error');
 
-  const expireSession = useCallback((message = 'Your saved session is no longer linked to an account. Please sign in again.') => {
-    clearStoredSession();
-    setToken('');
-    setUser(null);
-    setAuthNotice(message);
-    setAuthNoticeType('error');
-  }, []);
+  const expireSession = useCallback(
+    (message = 'Your saved session is no longer linked to an account. Please sign in again.') => {
+      clearStoredSession();
+      setToken('');
+      setUser(null);
+      setAuthNotice(message);
+      setAuthNoticeType('error');
+    },
+    []
+  );
 
-  useEffect(() => onSessionUpdated((newToken, refreshedUser) => {
-    setToken(newToken);
-    if (refreshedUser) setUser(refreshedUser);
-  }), []);
+  useEffect(
+    () =>
+      onSessionUpdated((newToken, refreshedUser) => {
+        setToken(newToken);
+        if (refreshedUser) setUser(refreshedUser);
+      }),
+    []
+  );
 
   const signOut = useCallback(async () => {
     const refreshToken = localStorage.getItem('daily-streak-refresh');
@@ -75,7 +84,6 @@ export function useAuth() {
     setAuthNoticeType,
     expireSession,
     signOut,
-    authenticate
+    authenticate,
   };
 }
-

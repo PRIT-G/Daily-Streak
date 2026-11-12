@@ -25,7 +25,7 @@ test('computes consistency, averages, and best day over the window', () => {
   const days = [
     { date: daysAgo(TODAY, 1), github: 3 },
     { date: daysAgo(TODAY, 5), sources: { leetcode: 2, manual: 1 } },
-    { date: daysAgo(TODAY, 40), github: 50 }
+    { date: daysAgo(TODAY, 40), github: 50 },
   ];
   const insights = buildInsights(days, 2, { current: 1, longest: 1 }, {}, NOW);
   // both in-window days total 3, meeting target 2; the 40-days-ago day is outside the window
@@ -60,11 +60,14 @@ test('reports next streak milestone and week comparison', () => {
 test('detects busiest source and stale provider syncs', () => {
   const days = [
     { date: TODAY, github: 4, sources: { github: 4, codeforces: 1 } },
-    { date: daysAgo(TODAY, 2), sources: { github: 2 } }
+    { date: daysAgo(TODAY, 2), sources: { github: 2 } },
   ];
   const providers = {
-    github: { username: 'octocat', lastSyncedAt: new Date(NOW.getTime() - 30 * 86400000).toISOString() },
-    leetcode: { username: 'user', lastSyncedAt: NOW.toISOString() }
+    github: {
+      username: 'octocat',
+      lastSyncedAt: new Date(NOW.getTime() - 30 * 86400000).toISOString(),
+    },
+    leetcode: { username: 'user', lastSyncedAt: NOW.toISOString() },
   };
   const insights = buildInsights(days, 1, { current: 1, longest: 1 }, providers, NOW);
   assert.equal(insights.busiestSource[0].id, 'github');

@@ -25,7 +25,7 @@ export async function refreshTokens() {
     const response = await fetch(`${API_BASE}/auth/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken })
+      body: JSON.stringify({ refreshToken }),
     });
     if (!response.ok) {
       clearSession();
@@ -50,8 +50,8 @@ async function fetchWithAuth(path, options, token) {
     headers: {
       ...(options.body ? { 'Content-Type': 'application/json' } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers
-    }
+      ...options.headers,
+    },
   });
 }
 
@@ -86,13 +86,13 @@ export async function apiBlob(path, { token } = {}) {
   let response;
   try {
     response = await fetch(`${API_BASE}${path}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     if (response.status === 401 && token && !path.startsWith('/auth/')) {
       const newToken = await refreshTokens();
       if (newToken) {
         response = await fetch(`${API_BASE}${path}`, {
-          headers: { Authorization: `Bearer ${newToken}` }
+          headers: { Authorization: `Bearer ${newToken}` },
         });
       }
     }

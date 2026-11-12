@@ -9,7 +9,7 @@ function ActivityTabs({ activeTab, onChange }) {
     ['calendar', 'Activity calendar'],
     ['github', 'GitHub activity'],
     ['leetcode', 'LeetCode activity'],
-    ['private', 'Private activity']
+    ['private', 'Private activity'],
   ];
   return (
     <div className="provider-activity-tabs" role="tablist" aria-label="Activity sources">
@@ -36,7 +36,7 @@ export default function ProviderActivity({
   token,
   onOpenSettings,
   onNotice,
-  onRefreshDashboard
+  onRefreshDashboard,
 }) {
   const [activeTab, setActiveTab] = useState('calendar');
   const username = dashboard.providers?.leetcode?.username || '';
@@ -46,9 +46,10 @@ export default function ProviderActivity({
     if (!callback) return;
     onNotice({
       type: callback === 'connected' ? 'success' : 'error',
-      text: callback === 'connected'
-        ? 'GitHub connected. Recent repository activity is ready.'
-        : 'GitHub connection could not be completed. Check the app configuration and try again.'
+      text:
+        callback === 'connected'
+          ? 'GitHub connected. Recent repository activity is ready.'
+          : 'GitHub connection could not be completed. Check the app configuration and try again.',
     });
     window.history.replaceState(null, '', '#activity');
   }, [onNotice]);

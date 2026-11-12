@@ -14,7 +14,11 @@ export default function ActivityMessage({ error, loading, empty, emptyTitle, onR
       <div className="provider-activity-state error" role="alert">
         <CircleAlert size={18} />
         <span>{error}</span>
-        {onRetry && <button className="small-button" onClick={onRetry}>Try again</button>}
+        {onRetry && (
+          <button className="small-button" onClick={onRetry}>
+            Try again
+          </button>
+        )}
       </div>
     );
   }
@@ -27,4 +31,3 @@ export default function ActivityMessage({ error, loading, empty, emptyTitle, onR
   }
   return null;
 }
-

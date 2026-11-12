@@ -4,7 +4,9 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
+import { toNodeHandler } from 'better-auth/node';
 import { config } from './config.js';
+import { auth } from './auth.js';
 import authRoutes from './routes/auth.js';
 import dashboardRoutes from './routes/dashboard.js';
 import providerRoutes from './routes/providers.js';
@@ -26,18 +28,20 @@ app.disable('x-powered-by');
 // Trust a single proxy hop (load balancer / dev preview proxy) so
 // X-Forwarded-For is honored and express-rate-limit validations pass.
 app.set('trust proxy', 1);
-app.use(helmet({
-  contentSecurityPolicy: {
-    useDefaults: true,
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
-      connectSrc: ["'self'", config.clientOrigin]
-    }
-  }
-}));
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+        connectSrc: ["'self'", config.clientOrigin],
+      },
+    },
+  })
+);
 app.use(cors({ origin: config.clientOrigin, credentials: true }));
 app.use(requestLogger);
 app.use('/api/badges', express.json({ limit: '2mb' }));
@@ -65,21 +69,50 @@ const authenticatedLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: rateLimitKey,
-  message: { error: 'Too many requests. Please slow down and try again later.' }
+  message: { error: 'Too many requests. Please slow down and try again later.' },
 });
 
-app.get('/api/health', (_req, res) => res.json({
-  status: 'ok',
-  service: 'daily-streak-tracker-api',
-  database: {
-    connected: mongoose.connection.readyState === 1,
-    state: ['disconnected', 'connected', 'connecting', 'disconnecting'][mongoose.connection.readyState] || 'unknown'
-  }
-}));
+app.get('/api/health', (_req, res) =>
+  res.json({
+    status: 'ok',
+    service: 'daily-streak-tracker-api',
+    database: {
+      connected: mongoose.connection.readyState === 1,
+      state:
+        ['disconnected', 'connected', 'connecting', 'disconnecting'][
+          mongoose.connection.readyState
+        ] || 'unknown',
+    },
+  })
+);
 app.use('/api/client-errors', clientErrorRoutes);
 app.use('/api/webhooks', webhookIngestRouter);
 app.use('/api/webhooks', authenticatedLimiter, webhookAccountRouter);
-app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: true, legacyHeaders: false }), authRoutes);
+const betterAuthHandler = toNodeHandler(auth);
+const authRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+const isLegacyAuthRoute = (path) =>
+  path === '/register' ||
+  path === '/login' ||
+  path === '/logout' ||
+  path === '/me' ||
+  path === '/refresh' ||
+  path === '/session' ||
+  path.startsWith('/password-reset') ||
+  path.startsWith('/email-verification');
+
+const handleAuth = (req, res, next) => {
+  if (isLegacyAuthRoute(req.path)) {
+    return authRoutes(req, res, next);
+  }
+  return betterAuthHandler(req, res, next);
+};
+
+app.use('/api/auth', authRateLimiter, handleAuth);
 app.use('/api/account', authenticatedLimiter, accountRoutes);
 app.use('/api/private-activity', authenticatedLimiter, privateActivityRoutes);
 app.use('/api/dashboard', authenticatedLimiter, dashboardRoutes);
@@ -87,12 +120,20 @@ app.use('/api/providers', authenticatedLimiter, providerRoutes);
 app.use('/api/integrations/admin', authenticatedLimiter, integrationAdminRoutes);
 app.use('/api/integrations', authenticatedLimiter, integrationRoutes);
 app.use('/api/tasks', authenticatedLimiter, studentTaskRoutes);
-app.use('/api/public/badges', rateLimit({ windowMs: 60 * 1000, limit: 60, standardHeaders: true, legacyHeaders: false }), publicBadgeRoutes);
-app.use('/api/public', rateLimit({ windowMs: 60 * 1000, limit: 60, standardHeaders: true, legacyHeaders: false }), publicProfileRoutes);
+app.use(
+  '/api/public/badges',
+  rateLimit({ windowMs: 60 * 1000, limit: 60, standardHeaders: true, legacyHeaders: false }),
+  publicBadgeRoutes
+);
+app.use(
+  '/api/public',
+  rateLimit({ windowMs: 60 * 1000, limit: 60, standardHeaders: true, legacyHeaders: false }),
+  publicProfileRoutes
+);
 app.use('/api/badges', authenticatedLimiter, badgeRoutes);
 
 // Versioned aliases: /api/v1/* mirrors the unversioned routes above.
-app.use('/api/v1/auth', rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: true, legacyHeaders: false }), authRoutes);
+app.use('/api/v1/auth', authRateLimiter, handleAuth);
 app.use('/api/v1/account', authenticatedLimiter, accountRoutes);
 app.use('/api/v1/private-activity', authenticatedLimiter, privateActivityRoutes);
 app.use('/api/v1/dashboard', authenticatedLimiter, dashboardRoutes);
@@ -106,5 +147,7 @@ app.use((_req, res) => res.status(404).json({ error: 'Route not found.' }));
 app.use((error, _req, res, _next) => {
   logger.error('Request handler error', error);
   const status = error.status || 500;
-  res.status(status).json({ error: status === 500 ? 'Something went wrong. Please try again.' : error.message });
+  res
+    .status(status)
+    .json({ error: status === 500 ? 'Something went wrong. Please try again.' : error.message });
 });

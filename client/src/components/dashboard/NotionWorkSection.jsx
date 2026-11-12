@@ -1,4 +1,12 @@
-import { Check, ChevronDown, ExternalLink, LoaderCircle, Plus, RefreshCw, Search } from 'lucide-react';
+import {
+  Check,
+  ChevronDown,
+  ExternalLink,
+  LoaderCircle,
+  Plus,
+  RefreshCw,
+  Search,
+} from 'lucide-react';
 
 export default function NotionWorkSection({
   notionPages,
@@ -26,7 +34,7 @@ export default function NotionWorkSection({
   loadMoreNotionTasks,
   addNotionTask,
   saveNotionTask,
-  runAction
+  runAction,
 }) {
   return (
     <>
@@ -38,7 +46,8 @@ export default function NotionWorkSection({
           onChange={(event) => setNotionQuery(event.target.value)}
         />
         <button className="small-button" disabled={notionSearchLoading}>
-          {notionSearchLoading ? <LoaderCircle className="spin" size={13} /> : <Search size={13} />} Search
+          {notionSearchLoading ? <LoaderCircle className="spin" size={13} /> : <Search size={13} />}{' '}
+          Search
         </button>
       </form>
       <div className="notion-browser">
@@ -112,18 +121,28 @@ export default function NotionWorkSection({
               <div className="work-toolbar">
                 <div>
                   <h3>{notionData?.database.title || 'Notion tasks'}</h3>
-                  <p>Tasks load in batches of 100, most recently edited first. Changes are saved to Notion.</p>
+                  <p>
+                    Tasks load in batches of 100, most recently edited first. Changes are saved to
+                    Notion.
+                  </p>
                 </div>
                 <button
                   className="small-button"
                   onClick={() => runAction(() => loadNotionTasks(selectedDatabase))}
                   disabled={notionLoading}
                 >
-                  {notionLoading ? <LoaderCircle className="spin" size={13} /> : <RefreshCw size={13} />} Refresh
+                  {notionLoading ? (
+                    <LoaderCircle className="spin" size={13} />
+                  ) : (
+                    <RefreshCw size={13} />
+                  )}{' '}
+                  Refresh
                 </button>
               </div>
               {notionData?.schema.status?.options.length > 0 && (
-                <p className="notion-schema-note">Status property: {notionData.schema.status.name}</p>
+                <p className="notion-schema-note">
+                  Status property: {notionData.schema.status.name}
+                </p>
               )}
               <form className="notion-create-form" onSubmit={addNotionTask}>
                 <input
@@ -159,7 +178,11 @@ export default function NotionWorkSection({
                           className="notion-task-edit"
                           onSubmit={(event) => {
                             event.preventDefault();
-                            saveNotionTask(task.id, { title: editingTitle }, 'Notion task updated.');
+                            saveNotionTask(
+                              task.id,
+                              { title: editingTitle },
+                              'Notion task updated.'
+                            );
                           }}
                         >
                           <input

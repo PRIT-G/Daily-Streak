@@ -5,10 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f5f3ec" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="description" content="One steady workspace for coding practice, study plans, and the work waiting for you. Free during Daily Streak early access." />
+    <meta
+      name="description"
+      content="One steady workspace for coding practice, study plans, and the work waiting for you. Free during Daily Streak early access."
+    />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Daily Streak — Make room for the work that matters" />
-    <meta property="og:description" content="Coding practice, study plans, and the work waiting for you—together in one steady, personal workspace." />
+    <meta
+      property="og:description"
+      content="Coding practice, study plans, and the work waiting for you—together in one steady, personal workspace."
+    />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Daily Streak — Your work, study, and progress in one place</title>
   </head>
@@ -16,7 +22,10 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
-      if ('serviceWorker' in navigator && !/^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)) {
+      if (
+        'serviceWorker' in navigator &&
+        !/^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)
+      ) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js').catch(() => {});
         });

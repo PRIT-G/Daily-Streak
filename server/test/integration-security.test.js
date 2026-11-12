@@ -1,7 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { config } from '../src/config.js';
-import { createOAuthState, decryptToken, encryptToken, verifyOAuthState } from '../src/services/integrationSecurity.js';
+import {
+  createOAuthState,
+  decryptToken,
+  encryptToken,
+  verifyOAuthState,
+} from '../src/services/integrationSecurity.js';
 
 test('OAuth credentials round-trip through authenticated encryption', () => {
   const previousKey = config.integrations.encryptionKey;

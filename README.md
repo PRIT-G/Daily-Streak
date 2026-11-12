@@ -9,6 +9,7 @@ Daily Streak Tracker is a developer productivity platform that unifies coding ac
 ## The Problem
 
 Developers work across GitHub, LeetCode, Codeforces, GitLab, and project tools—but progress is fragmented. Without a single view of daily effort:
+
 - Consistency is hard to measure
 - Streaks and habits are easy to break
 - Learning and coding progress feel invisible
@@ -17,6 +18,7 @@ Developers work across GitHub, LeetCode, Codeforces, GitLab, and project tools�
 ## The Solution
 
 Daily Streak Tracker aggregates public coding signals and private activity into one workspace:
+
 - **One streak** across platforms, normalized by day
 - **Actionable insights** (consistency, forecasts, anomalies, recommendations)
 - **Goals & accountability** with streak freezes and reminders
@@ -36,18 +38,18 @@ Daily Streak Tracker aggregates public coding signals and private activity into 
 
 ## Key Features
 
-| Area | Capabilities |
-|------|---------------|
-| **Multi-platform Tracking** | Sync activity from GitHub, LeetCode, Codeforces, and GitLab into a unified daily timeline |
-| **Streaks & Goals** | Current/longest streaks, daily targets, streak freeze shields (earned over time) |
-| **Insights** | 30-day consistency score, streak forecasts, anomaly detection, weekday patterns, recommendations |
-| **Student Planner** | Private tasks for assignments, exams, and study sessions (create/edit/complete/filter/delete) |
-| **Milestones & Badges** | Auto-earned streak badges plus custom badge uploads and optional public badge gallery |
-| **Work Hub** | Jira & Notion OAuth integration for viewing/updating assigned work and task databases |
-| **Public Presence** | Opt-in public profile streak cards and weekly consistency leaderboard |
-| **Webhook Ingestion** | Record private activity from scripts/CI via signed per-user webhooks |
-| **PWA** | Installable web app with offline-capable service worker |
-| **Security** | JWT access + rotating refresh tokens, login lockout, audit logging, CSP, rate limiting |
+| Area                        | Capabilities                                                                                     |
+| --------------------------- | ------------------------------------------------------------------------------------------------ |
+| **Multi-platform Tracking** | Sync activity from GitHub, LeetCode, Codeforces, and GitLab into a unified daily timeline        |
+| **Streaks & Goals**         | Current/longest streaks, daily targets, streak freeze shields (earned over time)                 |
+| **Insights**                | 30-day consistency score, streak forecasts, anomaly detection, weekday patterns, recommendations |
+| **Student Planner**         | Private tasks for assignments, exams, and study sessions (create/edit/complete/filter/delete)    |
+| **Milestones & Badges**     | Auto-earned streak badges plus custom badge uploads and optional public badge gallery            |
+| **Work Hub**                | Jira & Notion OAuth integration for viewing/updating assigned work and task databases            |
+| **Public Presence**         | Opt-in public profile streak cards and weekly consistency leaderboard                            |
+| **Webhook Ingestion**       | Record private activity from scripts/CI via signed per-user webhooks                             |
+| **PWA**                     | Installable web app with offline-capable service worker                                          |
+| **Security**                | JWT access + rotating refresh tokens, login lockout, audit logging, CSP, rate limiting           |
 
 ---
 
@@ -63,15 +65,15 @@ Daily Streak Tracker aggregates public coding signals and private activity into 
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| **Frontend** | React 18, Vite, CSS |
-| **Backend** | Node.js, Express |
-| **Database** | MongoDB (Mongoose) |
-| **Auth** | JWT (short-lived access + rotating refresh tokens) |
-| **Testing** | Vitest, React Testing Library, Supertest (Node test runner) |
-| **Quality** | ESLint (flat config), Prettier |
-| **CI/CD** | GitHub Actions, Dependabot |
+| Layer            | Technology                                                   |
+| ---------------- | ------------------------------------------------------------ |
+| **Frontend**     | React 18, Vite, CSS                                          |
+| **Backend**      | Node.js, Express                                             |
+| **Database**     | MongoDB (Mongoose)                                           |
+| **Auth**         | JWT (short-lived access + rotating refresh tokens)           |
+| **Testing**      | Vitest, React Testing Library, Supertest (Node test runner)  |
+| **Quality**      | ESLint (flat config), Prettier                               |
+| **CI/CD**        | GitHub Actions, Dependabot                                   |
 | **Integrations** | OAuth (GitHub/Jira/Notion), provider adapters, webhooks, PWA |
 
 ---
@@ -79,6 +81,7 @@ Daily Streak Tracker aggregates public coding signals and private activity into 
 ## Quick Start
 
 ### Prerequisites
+
 - **Node.js 20+**
 - **MongoDB** (local instance or MongoDB Atlas URI)
 - **SMTP credentials** (required for production email flows)
@@ -102,12 +105,13 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 npm run dev
 ```
 
-- **App:** http://localhost:5173  
+- **App:** http://localhost:5173
 - **API health:** http://localhost:4000/api/health
 
 ### Environment Variables
 
 **Required (`server/.env`)**
+
 ```env
 MONGODB_URI=mongodb://localhost:27017/daily-streak
 JWT_SECRET=your-long-random-secret
@@ -115,6 +119,7 @@ CLIENT_ORIGIN=http://localhost:5173
 ```
 
 **Production (additional)**
+
 ```env
 SMTP_HOST=smtp.example.com
 SMTP_USER=your-user
@@ -195,6 +200,7 @@ Committed configs ensure consistent quality across contributors and CI:
 - **`.prettierrc.json`** — Formatting rules. Run `npm run format` / `npm run format:check`.
 
 Example Prettier config:
+
 ```json
 {
   "semi": true,
@@ -208,17 +214,17 @@ Example Prettier config:
 
 ## API Highlights
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/auth/register` | Create account |
-| `POST` | `/api/auth/login` | Sign in (access + refresh tokens) |
-| `POST` | `/api/auth/refresh` | Rotate refresh token |
-| `GET`  | `/api/dashboard` | Dashboard data |
-| `GET`  | `/api/dashboard/insights` | Computed insights |
-| `POST` | `/api/providers/:provider/refresh` | Sync provider activity |
-| `POST` | `/api/webhooks/activity` | Ingest private activity (signed) |
-| `GET`  | `/api/leaderboard` | Weekly consistency leaderboard |
-| `GET`  | `/api/public/badges/:key` | Public badge gallery |
+| Method | Endpoint                           | Description                       |
+| ------ | ---------------------------------- | --------------------------------- |
+| `POST` | `/api/auth/register`               | Create account                    |
+| `POST` | `/api/auth/login`                  | Sign in (access + refresh tokens) |
+| `POST` | `/api/auth/refresh`                | Rotate refresh token              |
+| `GET`  | `/api/dashboard`                   | Dashboard data                    |
+| `GET`  | `/api/dashboard/insights`          | Computed insights                 |
+| `POST` | `/api/providers/:provider/refresh` | Sync provider activity            |
+| `POST` | `/api/webhooks/activity`           | Ingest private activity (signed)  |
+| `GET`  | `/api/leaderboard`                 | Weekly consistency leaderboard    |
+| `GET`  | `/api/public/badges/:key`          | Public badge gallery              |
 
 > Routes are also available under `/api/v1/*` for versioned access.
 
@@ -313,4 +319,4 @@ MIT — see [LICENSE](LICENSE) if present in the repository.
 
 ---
 
-*Built to make consistency visible—one day, one streak at a time.*
+_Built to make consistency visible—one day, one streak at a time._

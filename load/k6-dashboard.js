@@ -11,14 +11,14 @@ export const options = {
       stages: [
         { duration: '30s', target: 20 },
         { duration: '1m', target: 50 },
-        { duration: '30s', target: 0 }
-      ]
-    }
+        { duration: '30s', target: 0 },
+      ],
+    },
   },
   thresholds: {
     http_req_failed: ['rate<0.05'],
-    http_req_duration: ['p(95)<800']
-  }
+    http_req_duration: ['p(95)<800'],
+  },
 };
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:4000';
@@ -26,10 +26,10 @@ const TOKEN = __ENV.TOKEN || '';
 
 export default function () {
   const res = http.get(`${BASE_URL}/api/dashboard`, {
-    headers: { Authorization: `Bearer ${TOKEN}` }
+    headers: { Authorization: `Bearer ${TOKEN}` },
   });
   check(res, {
     'status is 200': (r) => r.status === 200,
-    'has streaks': (r) => r.json('streaks') !== undefined
+    'has streaks': (r) => r.json('streaks') !== undefined,
   });
 }

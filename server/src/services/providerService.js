@@ -49,7 +49,7 @@ export async function refreshProvider(userId, provider) {
     );
     const dateRange = {
       $gte: `${Math.min(...years)}-01-01`,
-      $lte: `${Math.max(...years)}-12-31`
+      $lte: `${Math.max(...years)}-12-31`,
     };
     const reset = { [`sources.${provider}`]: 0 };
     if (['github', 'leetcode', 'manual'].includes(provider)) reset[provider] = 0;
@@ -61,8 +61,8 @@ export async function refreshProvider(userId, provider) {
         updateOne: {
           filter: { userId: user._id, date },
           update: { $set: { [`sources.${provider}`]: Math.max(0, Number(count) || 0) } },
-          upsert: true
-        }
+          upsert: true,
+        },
       }));
     if (operations.length) await ActivityDay.bulkWrite(operations, { ordered: false });
     const existingDays = await ActivityDay.find({ userId: user._id, date: dateRange }).lean();
@@ -82,12 +82,13 @@ export async function refreshProvider(userId, provider) {
       body: {
         provider: connection,
         importedDays: operations.length,
-        years
-      }
+        years,
+      },
     };
   } catch (error) {
     connection.status = 'error';
-    connection.message = error.message || 'Provider sync failed. Refresh to check the saved activity.';
+    connection.message =
+      error.message || 'Provider sync failed. Refresh to check the saved activity.';
     await user.save();
     return { status: 502, body: { error: connection.message, provider: connection } };
   }

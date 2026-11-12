@@ -25,10 +25,14 @@ export default function App() {
     window.location.hash = 'overview';
   }
 
-  const backToHome = () => { window.location.hash = ''; };
+  const backToHome = () => {
+    window.location.hash = '';
+  };
 
   const routePath = publicRoute.split('?')[0];
-  const routeParams = new URLSearchParams(publicRoute.includes('?') ? publicRoute.slice(publicRoute.indexOf('?') + 1) : '');
+  const routeParams = new URLSearchParams(
+    publicRoute.includes('?') ? publicRoute.slice(publicRoute.indexOf('?') + 1) : ''
+  );
 
   if (routePath.startsWith('u/')) {
     return <PublicProfilePage userId={routePath.slice(2)} onBack={backToHome} />;
@@ -38,13 +42,15 @@ export default function App() {
   }
 
   if (!app.token) {
-    if (['login', 'signup', 'request-reset', 'reset-password', 'verify-email'].includes(routePath)) {
+    if (
+      ['login', 'signup', 'request-reset', 'reset-password', 'verify-email'].includes(routePath)
+    ) {
       const modeMap = {
         login: 'login',
         signup: 'register',
         'request-reset': 'request-reset',
         'reset-password': 'reset-password',
-        'verify-email': 'verify-email'
+        'verify-email': 'verify-email',
       };
       return (
         <AuthScreen
@@ -53,22 +59,30 @@ export default function App() {
           initialToken={routeParams.get('token') || ''}
           onAuth={authenticate}
           onRecoveryAction={runRecoveryAction}
-          onBack={() => { window.location.hash = ''; }}
+          onBack={() => {
+            window.location.hash = '';
+          }}
           message={app.authNotice}
         />
       );
     }
     return (
       <MarketingPage
-        onGetStarted={() => { window.location.hash = 'signup'; }}
-        onSignIn={() => { window.location.hash = 'login'; }}
+        onGetStarted={() => {
+          window.location.hash = 'signup';
+        }}
+        onSignIn={() => {
+          window.location.hash = 'login';
+        }}
       />
     );
   }
   if (app.loading) {
     return (
       <div className="loading-screen">
-        <span className="brand-mark"><Flame size={20} fill="currentColor" /></span>
+        <span className="brand-mark">
+          <Flame size={20} fill="currentColor" />
+        </span>
         <span>Getting your streak ready…</span>
       </div>
     );

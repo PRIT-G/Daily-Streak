@@ -1,9 +1,8 @@
 const LEGACY_SOURCES = ['github', 'leetcode', 'manual'];
 
 export function activitySources(day) {
-  const storedSources = day.sources instanceof Map
-    ? Object.fromEntries(day.sources)
-    : day.sources || {};
+  const storedSources =
+    day.sources instanceof Map ? Object.fromEntries(day.sources) : day.sources || {};
   const sources = { ...storedSources };
 
   for (const source of LEGACY_SOURCES) {

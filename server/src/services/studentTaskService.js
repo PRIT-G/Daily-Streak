@@ -9,7 +9,7 @@ function taskResponse(task) {
     type: task.type,
     completed: task.completed,
     createdAt: task.createdAt,
-    updatedAt: task.updatedAt
+    updatedAt: task.updatedAt,
   };
 }
 

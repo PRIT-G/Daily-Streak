@@ -26,7 +26,7 @@ export default function JiraWorkSection({
   changeJiraStatus,
   findAssignees,
   saveAssignee,
-  runAction
+  runAction,
 }) {
   return (
     <>
@@ -40,7 +40,9 @@ export default function JiraWorkSection({
             disabled={jiraSiteChanging}
           >
             {jiraSites.map((site) => (
-              <option value={site.cloudId} key={site.cloudId}>{site.siteName}</option>
+              <option value={site.cloudId} key={site.cloudId}>
+                {site.siteName}
+              </option>
             ))}
           </select>
         </label>
@@ -48,7 +50,8 @@ export default function JiraWorkSection({
       <div className="work-toolbar">
         <p>Assigned issues, ordered by recent activity. Loaded in pages of 50.</p>
         <button className="small-button" onClick={() => runAction(loadJira)} disabled={jiraLoading}>
-          {jiraLoading ? <LoaderCircle className="spin" size={13} /> : <RefreshCw size={13} />} Refresh
+          {jiraLoading ? <LoaderCircle className="spin" size={13} /> : <RefreshCw size={13} />}{' '}
+          Refresh
         </button>
       </div>
       {jiraLoading && !jiraIssues.length ? (
@@ -78,7 +81,10 @@ export default function JiraWorkSection({
                       aria-label={`New status for ${issue.key}`}
                       value={jiraSelection[issue.key] || ''}
                       onChange={(event) =>
-                        setJiraSelection((current) => ({ ...current, [issue.key]: event.target.value }))
+                        setJiraSelection((current) => ({
+                          ...current,
+                          [issue.key]: event.target.value,
+                        }))
                       }
                     >
                       {jiraTransitions[issue.key].map((transition) => (
@@ -114,7 +120,10 @@ export default function JiraWorkSection({
                         value={jiraAssigneeQuery}
                         onChange={(event) => setJiraAssigneeQuery(event.target.value)}
                       />
-                      <button className="small-button" disabled={jiraAssigneeQuery.trim().length < 2}>
+                      <button
+                        className="small-button"
+                        disabled={jiraAssigneeQuery.trim().length < 2}
+                      >
                         <Search size={12} /> Find
                       </button>
                     </form>

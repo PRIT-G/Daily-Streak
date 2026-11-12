@@ -8,7 +8,7 @@ export function requestLogger(req, res, next) {
       method: req.method,
       path: req.originalUrl,
       status: res.statusCode,
-      durationMs: Math.round(durationMs * 100) / 100
+      durationMs: Math.round(durationMs * 100) / 100,
     });
   });
   next();

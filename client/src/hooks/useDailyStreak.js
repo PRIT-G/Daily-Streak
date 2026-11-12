@@ -7,7 +7,7 @@ import {
   updateGoal,
   updateReminders,
   updateStreakFreeze,
-  updatePublicProfile
+  updatePublicProfile,
 } from '../features/dashboard/api.js';
 import { useAuth, isMissingAccountError } from './useAuth.js';
 import { useProviders } from './useProviders.js';
@@ -28,12 +28,12 @@ export const EMPTY_DASHBOARD = {
     github: { username: '', status: 'not-connected', message: '' },
     leetcode: { username: '', status: 'not-connected', message: '' },
     codeforces: { username: '', status: 'not-connected', message: '' },
-    gitlab: { username: '', status: 'not-connected', message: '' }
+    gitlab: { username: '', status: 'not-connected', message: '' },
   },
   insights: null,
   streakFreeze: { enabled: false, shields: 0, coveredDates: [] },
   publicProfile: { enabled: false, id: '' },
-  reminders: { enabled: false, reminderTime: '20:00', weeklyDigest: false }
+  reminders: { enabled: false, reminderTime: '20:00', weeklyDigest: false },
 };
 
 export default function useDailyStreak() {
@@ -47,7 +47,7 @@ export default function useDailyStreak() {
     authNoticeType,
     expireSession: authExpireSession,
     signOut: authSignOut,
-    authenticate
+    authenticate,
   } = useAuth();
 
   const [dashboard, setDashboard] = useState(EMPTY_DASHBOARD);
@@ -55,26 +55,32 @@ export default function useDailyStreak() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [notice, setNotice] = useState(null);
 
-  const loadDashboard = useCallback(async (activeToken = token, year = selectedYear) => {
-    if (!activeToken) return;
-    const [currentUser, data, taskData, gallery] = await Promise.all([
-      getCurrentUser(activeToken),
-      getDashboard(activeToken, year),
-      getStudentTasks(activeToken),
-      getBadgeGallery(activeToken)
-    ]);
-    setUser(currentUser.user);
-    setDashboard({
-      ...data,
-      tasks: taskData.tasks,
-      publicBadgeGalleryId: gallery.galleryId
-    });
-  }, [selectedYear, setUser, token]);
+  const loadDashboard = useCallback(
+    async (activeToken = token, year = selectedYear) => {
+      if (!activeToken) return;
+      const [currentUser, data, taskData, gallery] = await Promise.all([
+        getCurrentUser(activeToken),
+        getDashboard(activeToken, year),
+        getStudentTasks(activeToken),
+        getBadgeGallery(activeToken),
+      ]);
+      setUser(currentUser.user);
+      setDashboard({
+        ...data,
+        tasks: taskData.tasks,
+        publicBadgeGalleryId: gallery.galleryId,
+      });
+    },
+    [selectedYear, setUser, token]
+  );
 
-  const expireSession = useCallback((message) => {
-    authExpireSession(message);
-    setDashboard(EMPTY_DASHBOARD);
-  }, [authExpireSession]);
+  const expireSession = useCallback(
+    (message) => {
+      authExpireSession(message);
+      setDashboard(EMPTY_DASHBOARD);
+    },
+    [authExpireSession]
+  );
 
   const signOut = useCallback(() => {
     authSignOut();
@@ -96,15 +102,16 @@ export default function useDailyStreak() {
         return Promise.all([
           getDashboard(token, selectedYear),
           getStudentTasks(token),
-          getBadgeGallery(token)
+          getBadgeGallery(token),
         ]);
       })
       .then(([data, taskData, gallery]) => {
-        if (active && data) setDashboard({
-          ...data,
-          tasks: taskData.tasks,
-          publicBadgeGalleryId: gallery.galleryId
-        });
+        if (active && data)
+          setDashboard({
+            ...data,
+            tasks: taskData.tasks,
+            publicBadgeGalleryId: gallery.galleryId,
+          });
       })
       .catch((error) => {
         if (!active) return;
@@ -113,7 +120,9 @@ export default function useDailyStreak() {
       })
       .finally(() => active && setLoading(false));
 
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [token, selectedYear, expireSession, setLoading, setUser]);
 
   const changeYear = useCallback((year) => {
@@ -122,56 +131,70 @@ export default function useDailyStreak() {
 
   const refreshDashboard = useCallback(() => loadDashboard(), [loadDashboard]);
 
-  const runAction = useCallback(async (action, successMessage) => {
-    try {
-      await action();
-      await loadDashboard();
-      setNotice({ type: 'success', text: successMessage });
-      window.setTimeout(() => setNotice(null), 4200);
-      return true;
-    } catch (error) {
-      if (isMissingAccountError(error)) expireSession();
-      setNotice({ type: 'error', text: error.message });
-      return false;
-    }
-  }, [expireSession, loadDashboard]);
+  const runAction = useCallback(
+    async (action, successMessage) => {
+      try {
+        await action();
+        await loadDashboard();
+        setNotice({ type: 'success', text: successMessage });
+        window.setTimeout(() => setNotice(null), 4200);
+        return true;
+      } catch (error) {
+        if (isMissingAccountError(error)) expireSession();
+        setNotice({ type: 'error', text: error.message });
+        return false;
+      }
+    },
+    [expireSession, loadDashboard]
+  );
 
   const { busyProvider, saveProvider, refreshProvider } = useProviders({
     token,
     runAction,
-    loadDashboard
+    loadDashboard,
   });
 
   const { saveStudentTask, updateTask, removeTask } = useTasks({
     token,
-    runAction
+    runAction,
   });
 
   const { addUploadedBadge, removeUploadedBadge, setPublicBadgeGallery } = useBadges({
     token,
-    runAction
+    runAction,
   });
 
-  const saveGoal = useCallback((dailyTarget) =>
-    runAction(() => updateGoal(token, dailyTarget), 'Daily goal updated.'), [runAction, token]);
+  const saveGoal = useCallback(
+    (dailyTarget) => runAction(() => updateGoal(token, dailyTarget), 'Daily goal updated.'),
+    [runAction, token]
+  );
 
-  const saveReminders = useCallback((enabled, reminderTime, weeklyDigest) =>
-    runAction(
-      () => updateReminders(token, enabled, reminderTime, weeklyDigest),
-      enabled ? 'Email reminders enabled.' : 'Email reminders turned off.'
-    ), [runAction, token]);
+  const saveReminders = useCallback(
+    (enabled, reminderTime, weeklyDigest) =>
+      runAction(
+        () => updateReminders(token, enabled, reminderTime, weeklyDigest),
+        enabled ? 'Email reminders enabled.' : 'Email reminders turned off.'
+      ),
+    [runAction, token]
+  );
 
-  const saveStreakFreeze = useCallback((enabled) =>
-    runAction(
-      () => updateStreakFreeze(token, enabled),
-      enabled ? 'Streak freeze enabled.' : 'Streak freeze disabled.'
-    ), [runAction, token]);
+  const saveStreakFreeze = useCallback(
+    (enabled) =>
+      runAction(
+        () => updateStreakFreeze(token, enabled),
+        enabled ? 'Streak freeze enabled.' : 'Streak freeze disabled.'
+      ),
+    [runAction, token]
+  );
 
-  const savePublicProfile = useCallback((enabled) =>
-    runAction(
-      () => updatePublicProfile(token, enabled),
-      enabled ? 'Public streak card enabled.' : 'Public streak card disabled.'
-    ), [runAction, token]);
+  const savePublicProfile = useCallback(
+    (enabled) =>
+      runAction(
+        () => updatePublicProfile(token, enabled),
+        enabled ? 'Public streak card enabled.' : 'Public streak card disabled.'
+      ),
+    [runAction, token]
+  );
 
   const todayCount = useMemo(() => {
     if (Number.isFinite(dashboard.todayActivity)) return dashboard.todayActivity;
@@ -210,6 +233,6 @@ export default function useDailyStreak() {
     addUploadedBadge,
     removeUploadedBadge,
     setPublicBadgeGallery,
-    signOut
+    signOut,
   };
 }

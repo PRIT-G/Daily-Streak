@@ -38,7 +38,7 @@ export default function DashboardPage({
   onSetPublicBadgeGallery,
   onExternalNotice,
   onRefreshDashboard,
-  onSignOut
+  onSignOut,
 }) {
   const [activePage, setActivePage] = useState(() => dashboardPageFromHash(window.location.hash));
   const connectedCount = countConnections(dashboard.providers);
@@ -66,9 +66,19 @@ export default function DashboardPage({
 
   return (
     <div className="app-shell">
-      <Sidebar user={user} dashboard={dashboard} activePage={activePage} onOpenSettings={onOpenSettings} onSignOut={onSignOut} />
+      <Sidebar
+        user={user}
+        dashboard={dashboard}
+        activePage={activePage}
+        onOpenSettings={onOpenSettings}
+        onSignOut={onSignOut}
+      />
       <main className="main-content">
-        <DashboardHeader activePage={activePage} connectedCount={connectedCount} onOpenSettings={onOpenSettings} />
+        <DashboardHeader
+          activePage={activePage}
+          connectedCount={connectedCount}
+          onOpenSettings={onOpenSettings}
+        />
         <div className="page-body">
           <NoticeToast notice={notice} onDismiss={onDismissNotice} />
           {activePage === 'overview' && (
@@ -80,23 +90,45 @@ export default function DashboardPage({
                 todayGoalMet={todayGoalMet}
                 onOpenSettings={onOpenSettings}
               />
-              <ProgressStats dashboard={dashboard} todayCount={todayCount} todayGoalMet={todayGoalMet} />
+              <ProgressStats
+                dashboard={dashboard}
+                todayCount={todayCount}
+                todayGoalMet={todayGoalMet}
+              />
               {!connectedCount && <ConnectionBanner onOpenSettings={onOpenSettings} />}
               <section className="content-grid">
-                <GoalPanel dashboard={dashboard} todayCount={todayCount} todayGoalMet={todayGoalMet} onOpenSettings={onOpenSettings} />
-                <RecentActivityPanel dashboard={dashboard} onOpenSettings={onOpenSettings} limit={3} onViewAll />
+                <GoalPanel
+                  dashboard={dashboard}
+                  todayCount={todayCount}
+                  todayGoalMet={todayGoalMet}
+                  onOpenSettings={onOpenSettings}
+                />
+                <RecentActivityPanel
+                  dashboard={dashboard}
+                  onOpenSettings={onOpenSettings}
+                  limit={3}
+                  onViewAll
+                />
               </section>
             </>
           )}
           {activePage === 'insights' && (
             <section className="page-section">
-              <WelcomeSection name={greetingName} title="Your insights" description="Consistency, trends, and recommendations computed from your activity." />
+              <WelcomeSection
+                name={greetingName}
+                title="Your insights"
+                description="Consistency, trends, and recommendations computed from your activity."
+              />
               <InsightsPanel insights={dashboard.insights} dashboard={dashboard} />
             </section>
           )}
           {activePage === 'activity' && (
             <section className="page-section">
-              <WelcomeSection name={greetingName} title="Your coding activity" description="Explore your combined activity and each connected platform." />
+              <WelcomeSection
+                name={greetingName}
+                title="Your coding activity"
+                description="Explore your combined activity and each connected platform."
+              />
               <ProviderActivity
                 dashboard={dashboard}
                 year={year}
@@ -110,13 +142,21 @@ export default function DashboardPage({
           )}
           {activePage === 'planner' && (
             <section className="page-section">
-              <WelcomeSection name={greetingName} title="Your study plan" description="Keep courses, deadlines, and study sessions organized." />
+              <WelcomeSection
+                name={greetingName}
+                title="Your study plan"
+                description="Keep courses, deadlines, and study sessions organized."
+              />
               {planner}
             </section>
           )}
           {activePage === 'milestones' && (
             <section className="page-section">
-              <WelcomeSection name={greetingName} title="Your milestones" description="Celebrate the goals and streaks you’ve earned along the way." />
+              <WelcomeSection
+                name={greetingName}
+                title="Your milestones"
+                description="Celebrate the goals and streaks you’ve earned along the way."
+              />
               <MilestonesPanel
                 token={token}
                 badges={dashboard.badges}
@@ -128,9 +168,7 @@ export default function DashboardPage({
               />
             </section>
           )}
-          {activePage === 'work' && (
-            <WorkHub token={token} onNotice={onExternalNotice} />
-          )}
+          {activePage === 'work' && <WorkHub token={token} onNotice={onExternalNotice} />}
           {activePage === 'setup' && <StartupGuide />}
           <DashboardFooter />
         </div>

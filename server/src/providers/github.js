@@ -4,7 +4,13 @@ export function parseGithubContributions(html) {
   const tooltips = new Map();
   const tooltipPattern = /<tool-tip\b[^>]*\bfor="([^"]+)"[^>]*>([\s\S]*?)<\/tool-tip>/gi;
   for (const match of html.matchAll(tooltipPattern)) {
-    tooltips.set(match[1], match[2].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim());
+    tooltips.set(
+      match[1],
+      match[2]
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+    );
   }
 
   const totals = {};
@@ -22,7 +28,11 @@ export function parseGithubContributions(html) {
   return totals;
 }
 
-export async function fetchGithubActivity(username, fetchImpl = fetch, year = new Date().getUTCFullYear()) {
+export async function fetchGithubActivity(
+  username,
+  fetchImpl = fetch,
+  year = new Date().getUTCFullYear()
+) {
   const clean = username.trim();
   if (!/^[\w-]{1,39}$/.test(clean)) throw new Error('Enter a valid GitHub username.');
   const response = await fetchImpl(
@@ -30,14 +40,16 @@ export async function fetchGithubActivity(username, fetchImpl = fetch, year = ne
     {
       headers: {
         Accept: 'text/html',
-        'User-Agent': 'DailyStreakTracker/1.0'
+        'User-Agent': 'DailyStreakTracker/1.0',
       },
-      signal: AbortSignal.timeout(12000)
+      signal: AbortSignal.timeout(12000),
     }
   );
   if (!response.ok) {
-    if (response.status === 404) throw new Error('GitHub profile not found or its contribution calendar is unavailable.');
-    if (response.status === 403 || response.status === 429) throw new Error('GitHub rate limit reached. Try again later.');
+    if (response.status === 404)
+      throw new Error('GitHub profile not found or its contribution calendar is unavailable.');
+    if (response.status === 403 || response.status === 429)
+      throw new Error('GitHub rate limit reached. Try again later.');
     throw new Error(`GitHub returned status ${response.status}.`);
   }
 

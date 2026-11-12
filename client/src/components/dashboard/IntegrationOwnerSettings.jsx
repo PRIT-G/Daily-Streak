@@ -4,7 +4,7 @@ import {
   getIntegrationAdminProviders,
   removeIntegrationAdminProvider,
   saveIntegrationAdminProvider,
-  startIntegrationAdminSession
+  startIntegrationAdminSession,
 } from '../../features/integrations/api.js';
 
 const providerDetails = {
@@ -12,20 +12,20 @@ const providerDetails = {
     name: 'GitHub',
     url: 'https://github.com/settings/developers',
     clientIdName: 'GITHUB_CLIENT_ID',
-    clientSecretName: 'GITHUB_CLIENT_SECRET'
+    clientSecretName: 'GITHUB_CLIENT_SECRET',
   },
   jira: {
     name: 'Jira',
     url: 'https://developer.atlassian.com/console/myapps/',
     clientIdName: 'JIRA_CLIENT_ID',
-    clientSecretName: 'JIRA_CLIENT_SECRET'
+    clientSecretName: 'JIRA_CLIENT_SECRET',
   },
   notion: {
     name: 'Notion',
     url: 'https://www.notion.so/profile/integrations',
     clientIdName: 'NOTION_CLIENT_ID',
-    clientSecretName: 'NOTION_CLIENT_SECRET'
-  }
+    clientSecretName: 'NOTION_CLIENT_SECRET',
+  },
 };
 
 export default function IntegrationOwnerSettings() {
@@ -104,11 +104,22 @@ export default function IntegrationOwnerSettings() {
         <div>
           <div className="panel-kicker">APP OWNER ONLY</div>
           <h2>Shared OAuth connections</h2>
-          <p>Configure each provider once. Users can then connect their own accounts without entering OAuth app credentials.</p>
+          <p>
+            Configure each provider once. Users can then connect their own accounts without entering
+            OAuth app credentials.
+          </p>
         </div>
       </div>
-      {error && <div className="provider-activity-error" role="alert">{error}</div>}
-      {message && <p className="inline-success" role="status">{message}</p>}
+      {error && (
+        <div className="provider-activity-error" role="alert">
+          {error}
+        </div>
+      )}
+      {message && (
+        <p className="inline-success" role="status">
+          {message}
+        </p>
+      )}
       {!providers ? (
         <form className="integration-admin-login" onSubmit={signIn}>
           <label htmlFor="integration-admin-secret">Owner admin secret</label>
@@ -120,9 +131,13 @@ export default function IntegrationOwnerSettings() {
             onChange={(event) => setAdminSecret(event.target.value)}
             required
           />
-          <small>Set <code>INTEGRATION_ADMIN_SECRET</code> on the API server. Use this page over HTTPS; the secret is not saved in browser storage.</small>
+          <small>
+            Set <code>INTEGRATION_ADMIN_SECRET</code> on the API server. Use this page over HTTPS;
+            the secret is not saved in browser storage.
+          </small>
           <button className="button button-dark" disabled={busy || !adminSecret}>
-            {busy ? <LoaderCircle className="spin" size={14} /> : <LockKeyhole size={14} />} Unlock owner settings
+            {busy ? <LoaderCircle className="spin" size={14} /> : <LockKeyhole size={14} />} Unlock
+            owner settings
           </button>
         </form>
       ) : (
@@ -140,21 +155,29 @@ export default function IntegrationOwnerSettings() {
                   <p>Callback URL</p>
                   <code>{status.callbackUrl}</code>
                   {status.source === 'environment' ? (
-                    <p className="setup-owner-status">{status.configured
-                      ? 'Configured on the server with environment variables.'
-                      : 'Environment credentials are incomplete or the OAuth encryption key is missing.'}</p>
+                    <p className="setup-owner-status">
+                      {status.configured
+                        ? 'Configured on the server with environment variables.'
+                        : 'Environment credentials are incomplete or the OAuth encryption key is missing.'}
+                    </p>
                   ) : (
                     <>
-                      <p className="setup-owner-status">{status.configured ? `Configured · client ID ${status.clientId}` : 'Not configured yet'}</p>
+                      <p className="setup-owner-status">
+                        {status.configured
+                          ? `Configured · client ID ${status.clientId}`
+                          : 'Not configured yet'}
+                      </p>
                       <label>
                         Client ID
                         <input
                           autoComplete="off"
                           value={values.clientId}
-                          onChange={(event) => setForms((current) => ({
-                            ...current,
-                            [provider]: { ...values, clientId: event.target.value }
-                          }))}
+                          onChange={(event) =>
+                            setForms((current) => ({
+                              ...current,
+                              [provider]: { ...values, clientId: event.target.value },
+                            }))
+                          }
                           placeholder={details.clientIdName}
                         />
                       </label>
@@ -164,10 +187,12 @@ export default function IntegrationOwnerSettings() {
                           type="password"
                           autoComplete="new-password"
                           value={values.clientSecret}
-                          onChange={(event) => setForms((current) => ({
-                            ...current,
-                            [provider]: { ...values, clientSecret: event.target.value }
-                          }))}
+                          onChange={(event) =>
+                            setForms((current) => ({
+                              ...current,
+                              [provider]: { ...values, clientSecret: event.target.value },
+                            }))
+                          }
                           placeholder={details.clientSecretName}
                         />
                       </label>
@@ -177,21 +202,32 @@ export default function IntegrationOwnerSettings() {
                         disabled={busy || !values.clientId?.trim() || !values.clientSecret?.trim()}
                         onClick={() => save(provider)}
                       >
-                        {busy ? <LoaderCircle className="spin" size={14} /> : <Save size={14} />} Save {details.name}
+                        {busy ? <LoaderCircle className="spin" size={14} /> : <Save size={14} />}{' '}
+                        Save {details.name}
                       </button>
                       {status.source === 'admin' && (
-                        <button type="button" className="small-button" disabled={busy} onClick={() => remove(provider)}>
+                        <button
+                          type="button"
+                          className="small-button"
+                          disabled={busy}
+                          onClick={() => remove(provider)}
+                        >
                           Remove stored configuration
                         </button>
                       )}
                     </>
                   )}
-                  <small>Credentials are encrypted in the database. Keep the API encryption key backed up; environment variables take precedence.</small>
+                  <small>
+                    Credentials are encrypted in the database. Keep the API encryption key backed
+                    up; environment variables take precedence.
+                  </small>
                 </article>
               );
             })}
           </div>
-          <button type="button" className="small-button" onClick={signOut}>Lock owner settings</button>
+          <button type="button" className="small-button" onClick={signOut}>
+            Lock owner settings
+          </button>
         </>
       )}
     </section>

@@ -19,15 +19,13 @@ export function calculateStreaks(days, dailyTarget = 1, today = new Date(), cove
   }
 
   const qualifiedDates = new Set([...byDate.keys(), ...covered]);
-  const qualified = [...qualifiedDates]
-    .filter((date) => qualifies(date))
-    .sort();
+  const qualified = [...qualifiedDates].filter((date) => qualifies(date)).sort();
   let longest = 0;
   let run = 0;
   let previous = null;
   for (const date of qualified) {
     const currentDate = new Date(`${date}T00:00:00.000Z`);
-    const consecutive = previous && (currentDate - previous) === 86_400_000;
+    const consecutive = previous && currentDate - previous === 86_400_000;
     run = consecutive ? run + 1 : 1;
     longest = Math.max(longest, run);
     previous = currentDate;

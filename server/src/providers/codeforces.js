@@ -1,7 +1,11 @@
 const API_URL = 'https://codeforces.com/api/user.status';
 const SUBMISSION_LIMIT = 10000;
 
-export async function fetchCodeforcesActivity(username, year = new Date().getUTCFullYear(), fetchImpl = fetch) {
+export async function fetchCodeforcesActivity(
+  username,
+  year = new Date().getUTCFullYear(),
+  fetchImpl = fetch
+) {
   const clean = username.trim();
   if (!/^[\w.-]{1,24}$/.test(clean)) throw new Error('Enter a valid Codeforces handle.');
 
@@ -11,7 +15,7 @@ export async function fetchCodeforcesActivity(username, year = new Date().getUTC
   url.searchParams.set('count', String(SUBMISSION_LIMIT));
   const response = await fetchImpl(url, {
     headers: { Accept: 'application/json', 'User-Agent': 'DailyStreakTracker/1.0' },
-    signal: AbortSignal.timeout(12000)
+    signal: AbortSignal.timeout(12000),
   });
   if (!response.ok) {
     if (response.status === 429) throw new Error('Codeforces rate limit reached. Try again later.');
@@ -20,7 +24,9 @@ export async function fetchCodeforcesActivity(username, year = new Date().getUTC
 
   const payload = await response.json();
   if (payload.status !== 'OK' || !Array.isArray(payload.result)) {
-    throw new Error(payload.comment || 'Codeforces could not find a public submission history for this handle.');
+    throw new Error(
+      payload.comment || 'Codeforces could not find a public submission history for this handle.'
+    );
   }
 
   const counts = {};

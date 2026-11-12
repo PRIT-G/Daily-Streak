@@ -7,7 +7,7 @@ export async function recordAudit(userId, action, metadata = {}, req = null) {
       userId,
       action,
       metadata,
-      ip: req?.ip || ''
+      ip: req?.ip || '',
     });
   } catch (error) {
     logger.warn(`Audit log write failed for ${action}: ${error.message}`);

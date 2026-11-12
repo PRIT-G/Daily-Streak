@@ -3,7 +3,7 @@ import { LoaderCircle, Plus, Trash2 } from 'lucide-react';
 import {
   createPrivateActivityEntry,
   deletePrivateActivityEntry,
-  getPrivateActivityEntries
+  getPrivateActivityEntries,
 } from '../../features/activity/api.js';
 import ActivityMessage from './ActivityMessage.jsx';
 
@@ -78,9 +78,15 @@ export default function PrivateActivity({ token, onNotice, onRefreshDashboard })
         </div>
       </header>
       <p className="provider-activity-limitation">
-        Entries are private to your signed-in account, count toward your activity calendar and streak, and are included in your account export. They are not shown in public badge galleries.
+        Entries are private to your signed-in account, count toward your activity calendar and
+        streak, and are included in your account export. They are not shown in public badge
+        galleries.
       </p>
-      {error && <div className="provider-activity-error" role="alert">{error}</div>}
+      {error && (
+        <div className="provider-activity-error" role="alert">
+          {error}
+        </div>
+      )}
       <form className="private-activity-form" onSubmit={addEntry}>
         <label>
           Activity
@@ -120,7 +126,8 @@ export default function PrivateActivity({ token, onNotice, onRefreshDashboard })
           />
         </label>
         <button type="submit" className="button button-dark" disabled={saving || !title.trim()}>
-          {saving ? <LoaderCircle className="spin" size={14} /> : <Plus size={14} />} Add private activity
+          {saving ? <LoaderCircle className="spin" size={14} /> : <Plus size={14} />} Add private
+          activity
         </button>
       </form>
       <section className="private-activity-entries" aria-label="Your private activity entries">
@@ -135,7 +142,9 @@ export default function PrivateActivity({ token, onNotice, onRefreshDashboard })
             <article className="private-activity-entry" key={entry.id}>
               <div>
                 <strong>{entry.title}</strong>
-                <small>{entry.date} · {entry.type}</small>
+                <small>
+                  {entry.date} · {entry.type}
+                </small>
                 {entry.details && <p>{entry.details}</p>}
               </div>
               <button
@@ -145,7 +154,11 @@ export default function PrivateActivity({ token, onNotice, onRefreshDashboard })
                 disabled={deletingId === entry.id}
                 onClick={() => removeEntry(entry.id)}
               >
-                {deletingId === entry.id ? <LoaderCircle className="spin" size={15} /> : <Trash2 size={15} />}
+                {deletingId === entry.id ? (
+                  <LoaderCircle className="spin" size={15} />
+                ) : (
+                  <Trash2 size={15} />
+                )}
               </button>
             </article>
           ))
@@ -156,4 +169,3 @@ export default function PrivateActivity({ token, onNotice, onRefreshDashboard })
     </article>
   );
 }
-

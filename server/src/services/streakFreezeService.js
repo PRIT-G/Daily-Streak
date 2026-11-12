@@ -28,7 +28,9 @@ export async function applyStreakFreeze(user, days, now = new Date()) {
   const freeze = user.streakFreeze || (user.streakFreeze = {});
   freeze.enabled = freeze.enabled === true;
   freeze.shields = Math.min(MAX_SHIELDS, Math.max(0, Number(freeze.shields) || 0));
-  freeze.coveredDates = Array.isArray(freeze.coveredDates) ? freeze.coveredDates.slice(-MAX_COVERED_DATES) : [];
+  freeze.coveredDates = Array.isArray(freeze.coveredDates)
+    ? freeze.coveredDates.slice(-MAX_COVERED_DATES)
+    : [];
   freeze.rewardedThrough = Math.max(0, Number(freeze.rewardedThrough) || 0);
 
   if (!freeze.enabled) {
@@ -83,6 +85,8 @@ export function streakFreezeResponse(user) {
   return {
     enabled: freeze.enabled === true,
     shields: Math.min(MAX_SHIELDS, Math.max(0, Number(freeze.shields) || 0)),
-    coveredDates: Array.isArray(freeze.coveredDates) ? freeze.coveredDates.slice(-MAX_COVERED_DATES) : []
+    coveredDates: Array.isArray(freeze.coveredDates)
+      ? freeze.coveredDates.slice(-MAX_COVERED_DATES)
+      : [],
   };
 }

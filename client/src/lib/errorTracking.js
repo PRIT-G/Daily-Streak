@@ -17,16 +17,19 @@ function report(payload) {
       stack: String(payload.stack || '').slice(0, 4000),
       source: payload.source || 'window.onerror',
       path: window.location.pathname + window.location.hash,
-      userAgent: navigator.userAgent.slice(0, 300)
+      userAgent: navigator.userAgent.slice(0, 300),
     });
     if (navigator.sendBeacon) {
-      navigator.sendBeacon(`${API_BASE}/client-errors`, new Blob([body], { type: 'application/json' }));
+      navigator.sendBeacon(
+        `${API_BASE}/client-errors`,
+        new Blob([body], { type: 'application/json' })
+      );
     } else {
       fetch(`${API_BASE}/client-errors`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body,
-        keepalive: true
+        keepalive: true,
       }).catch(() => {});
     }
   } catch {
@@ -40,7 +43,7 @@ export function initErrorTracking() {
     report({
       message: event.message || 'Script error',
       stack: event.error?.stack || '',
-      source: 'window.onerror'
+      source: 'window.onerror',
     });
   });
   window.addEventListener('unhandledrejection', (event) => {
@@ -48,7 +51,7 @@ export function initErrorTracking() {
     report({
       message: reason?.message || String(reason || 'Unhandled promise rejection'),
       stack: reason?.stack || '',
-      source: 'unhandledrejection'
+      source: 'unhandledrejection',
     });
   });
 }

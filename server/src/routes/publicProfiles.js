@@ -10,7 +10,12 @@ import { buildInsights } from '../utils/insights.js';
 import { providerConnections } from '../providers/registry.js';
 
 const router = Router();
-const limiter = rateLimit({ windowMs: 60 * 1000, limit: 60, standardHeaders: true, legacyHeaders: false });
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 router.use(limiter);
 
 const MAX_LEADERBOARD_USERS = 50;
@@ -19,7 +24,8 @@ function addPrivateCounts(days, entries) {
   const counts = new Map(entries.map(({ _id, count }) => [_id, count]));
   const merged = new Map(days.map((day) => [day.date, day]));
   for (const [date, count] of counts) {
-    if (!merged.has(date)) merged.set(date, { date, github: 0, leetcode: 0, manual: 0, sources: {} });
+    if (!merged.has(date))
+      merged.set(date, { date, github: 0, leetcode: 0, manual: 0, sources: {} });
     const day = merged.get(date);
     const sources = { ...(day.sources || {}) };
     sources.manual = (Number(sources.manual) || 0) + count;
@@ -30,17 +36,21 @@ function addPrivateCounts(days, entries) {
 
 async function loadUserActivity(userId, today) {
   const [days, privateCounts] = await Promise.all([
-    ActivityDay.find({ userId, date: { $lte: today } }).select('date github leetcode manual sources').lean(),
+    ActivityDay.find({ userId, date: { $lte: today } })
+      .select('date github leetcode manual sources')
+      .lean(),
     PrivateActivityEntry.aggregate([
       { $match: { userId, date: { $lte: today } } },
-      { $group: { _id: '$date', count: { $sum: 1 } } }
-    ])
+      { $group: { _id: '$date', count: { $sum: 1 } } },
+    ]),
   ]);
   return addPrivateCounts(days, privateCounts);
 }
 
 function displayName(name) {
-  return String(name || 'Streaker').split(' ')[0].slice(0, 30);
+  return String(name || 'Streaker')
+    .split(' ')[0]
+    .slice(0, 30);
 }
 
 router.get('/profiles/:userId', async (req, res, next) => {
@@ -57,8 +67,19 @@ router.get('/profiles/:userId', async (req, res, next) => {
     const now = new Date();
     const today = now.toISOString().slice(0, 10);
     const days = await loadUserActivity(user._id, today);
-    const streaks = calculateStreaks(days, user.goal?.dailyTarget || 1, now, user.streakFreeze?.coveredDates || []);
-    const insights = buildInsights(days, user.goal?.dailyTarget || 1, streaks, providerConnections(user.providers), now);
+    const streaks = calculateStreaks(
+      days,
+      user.goal?.dailyTarget || 1,
+      now,
+      user.streakFreeze?.coveredDates || []
+    );
+    const insights = buildInsights(
+      days,
+      user.goal?.dailyTarget || 1,
+      streaks,
+      providerConnections(user.providers),
+      now
+    );
     const badgeCount = await UploadedBadge.countDocuments({ userId: user._id });
     return res.json({
       profile: {
@@ -69,8 +90,8 @@ router.get('/profiles/:userId', async (req, res, next) => {
         consistencyScore: insights.consistencyScore,
         goalDaysLast30: insights.goalDays,
         badgesEarned: (user.badges || []).length + badgeCount,
-        streakFreezeEnabled: user.streakFreeze?.enabled === true
-      }
+        streakFreezeEnabled: user.streakFreeze?.enabled === true,
+      },
     });
   } catch (error) {
     next(error);
@@ -86,15 +107,22 @@ router.get('/leaderboard', async (req, res, next) => {
     const weekStartKey = weekStart.toISOString().slice(0, 10);
 
     // Only users opted into public profiles who had activity this week.
-    const activeUserIds = await ActivityDay.distinct('userId', { date: { $gte: weekStartKey, $lte: today } });
-    const privateActive = await PrivateActivityEntry.distinct('userId', { date: { $gte: weekStartKey, $lte: today } });
+    const activeUserIds = await ActivityDay.distinct('userId', {
+      date: { $gte: weekStartKey, $lte: today },
+    });
+    const privateActive = await PrivateActivityEntry.distinct('userId', {
+      date: { $gte: weekStartKey, $lte: today },
+    });
     const candidateIds = [...new Set([...activeUserIds, ...privateActive].map(String))];
     if (!candidateIds.length) return res.json({ leaderboard: [], weekStart: weekStartKey });
 
     const users = await User.find({
       _id: { $in: candidateIds.slice(0, MAX_LEADERBOARD_USERS * 4) },
-      publicProfileEnabled: true
-    }).select('name goal providers streakFreeze badges').limit(MAX_LEADERBOARD_USERS * 4).lean();
+      publicProfileEnabled: true,
+    })
+      .select('name goal providers streakFreeze badges')
+      .limit(MAX_LEADERBOARD_USERS * 4)
+      .lean();
 
     const entries = [];
     for (const user of users) {
@@ -108,13 +136,14 @@ router.get('/leaderboard', async (req, res, next) => {
         currentStreak: streaks.current,
         longestStreak: streaks.longest,
         goalDaysThisWeek,
-        badgesEarned: (user.badges || []).length
+        badgesEarned: (user.badges || []).length,
       });
     }
-    entries.sort((a, b) =>
-      b.goalDaysThisWeek - a.goalDaysThisWeek ||
-      b.currentStreak - a.currentStreak ||
-      b.longestStreak - a.longestStreak
+    entries.sort(
+      (a, b) =>
+        b.goalDaysThisWeek - a.goalDaysThisWeek ||
+        b.currentStreak - a.currentStreak ||
+        b.longestStreak - a.longestStreak
     );
     return res.json({ leaderboard: entries.slice(0, 20), weekStart: weekStartKey });
   } catch (error) {

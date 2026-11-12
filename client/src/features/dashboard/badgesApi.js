@@ -8,8 +8,6 @@ export const deleteUploadedBadge = (token, badgeId) =>
 
 export const getBadgeGallery = (token) => api('/badges/gallery', { token });
 
-export const enableBadgeGallery = (token) =>
-  api('/badges/gallery', { token, method: 'POST' });
+export const enableBadgeGallery = (token) => api('/badges/gallery', { token, method: 'POST' });
 
-export const disableBadgeGallery = (token) =>
-  api('/badges/gallery', { token, method: 'DELETE' });
+export const disableBadgeGallery = (token) => api('/badges/gallery', { token, method: 'DELETE' });

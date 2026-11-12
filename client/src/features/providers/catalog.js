@@ -3,12 +3,14 @@ const PROVIDER_DETAILS = {
   leetcode: { label: 'LeetCode', icon: 'leetcode' },
   codeforces: { label: 'Codeforces', icon: 'codeforces' },
   gitlab: { label: 'GitLab', icon: 'gitlab' },
-  manual: { label: 'Private activity', icon: 'activity' }
+  manual: { label: 'Private activity', icon: 'activity' },
 };
 
 export function providerLabel(providerId) {
-  return PROVIDER_DETAILS[providerId]?.label ||
-    providerId.replace(/[-_]/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+  return (
+    PROVIDER_DETAILS[providerId]?.label ||
+    providerId.replace(/[-_]/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
+  );
 }
 
 export function providerIcon(providerId) {

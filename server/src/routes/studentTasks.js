@@ -5,7 +5,7 @@ import {
   createStudentTask,
   deleteStudentTask,
   listStudentTasks,
-  updateStudentTask
+  updateStudentTask,
 } from '../services/studentTaskService.js';
 
 const router = Router();
@@ -23,7 +23,8 @@ function validateTaskInput(body, partial = false) {
   const input = {};
   if (!partial || Object.hasOwn(body, 'title')) {
     const title = String(body.title || '').trim();
-    if (!title || title.length > 120) return { error: 'Task title must be between 1 and 120 characters.' };
+    if (!title || title.length > 120)
+      return { error: 'Task title must be between 1 and 120 characters.' };
     input.title = title;
   }
   if (Object.hasOwn(body, 'course')) {
@@ -34,13 +35,15 @@ function validateTaskInput(body, partial = false) {
   }
   if (!partial || Object.hasOwn(body, 'dueDate')) {
     const dueDate = body.dueDate === undefined || body.dueDate === null ? '' : body.dueDate;
-    const parsedDate = typeof dueDate === 'string' && dueDate
-      ? new Date(`${dueDate}T00:00:00.000Z`)
-      : null;
-    if (typeof dueDate !== 'string' ||
-        (dueDate && (!/^\d{4}-\d{2}-\d{2}$/.test(dueDate) ||
+    const parsedDate =
+      typeof dueDate === 'string' && dueDate ? new Date(`${dueDate}T00:00:00.000Z`) : null;
+    if (
+      typeof dueDate !== 'string' ||
+      (dueDate &&
+        (!/^\d{4}-\d{2}-\d{2}$/.test(dueDate) ||
           !Number.isFinite(parsedDate?.getTime()) ||
-          parsedDate.toISOString().slice(0, 10) !== dueDate))) {
+          parsedDate.toISOString().slice(0, 10) !== dueDate))
+    ) {
       return { error: 'Enter a valid due date.' };
     }
     input.dueDate = dueDate;
@@ -51,7 +54,8 @@ function validateTaskInput(body, partial = false) {
     input.type = type;
   }
   if (Object.hasOwn(body, 'completed')) {
-    if (typeof body.completed !== 'boolean') return { error: 'Task completion must be true or false.' };
+    if (typeof body.completed !== 'boolean')
+      return { error: 'Task completion must be true or false.' };
     input.completed = body.completed;
   }
   return { input };

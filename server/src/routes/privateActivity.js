@@ -21,7 +21,7 @@ function publicEntry(entry) {
     type: entry.type,
     title: entry.title,
     details: entry.details || '',
-    createdAt: entry.createdAt
+    createdAt: entry.createdAt,
   };
 }
 
@@ -57,11 +57,20 @@ router.post('/', async (req, res, next) => {
   if (!isCalendarDate(date) || date > new Date().toISOString().slice(0, 10)) {
     return res.status(400).json({ error: 'Choose a valid date today or in the past.' });
   }
-  if (!entryTypes.has(type)) return res.status(400).json({ error: 'Choose coding, study, or other activity.' });
-  if (!title || title.length > 120) return res.status(400).json({ error: 'Activity title must be between 1 and 120 characters.' });
-  if (details.length > 500) return res.status(400).json({ error: 'Activity details must be 500 characters or fewer.' });
+  if (!entryTypes.has(type))
+    return res.status(400).json({ error: 'Choose coding, study, or other activity.' });
+  if (!title || title.length > 120)
+    return res.status(400).json({ error: 'Activity title must be between 1 and 120 characters.' });
+  if (details.length > 500)
+    return res.status(400).json({ error: 'Activity details must be 500 characters or fewer.' });
   try {
-    const entry = await PrivateActivityEntry.create({ userId: req.userId, date, type, title, details });
+    const entry = await PrivateActivityEntry.create({
+      userId: req.userId,
+      date,
+      type,
+      title,
+      details,
+    });
     return res.status(201).json({ entry: publicEntry(entry) });
   } catch (error) {
     return next(error);
@@ -75,9 +84,10 @@ router.delete('/:entryId', async (req, res, next) => {
   try {
     const deletion = await PrivateActivityEntry.deleteOne({
       _id: req.params.entryId,
-      userId: req.userId
+      userId: req.userId,
     });
-    if (!deletion.deletedCount) return res.status(404).json({ error: 'Private activity entry was not found.' });
+    if (!deletion.deletedCount)
+      return res.status(404).json({ error: 'Private activity entry was not found.' });
     return res.status(204).end();
   } catch (error) {
     return next(error);

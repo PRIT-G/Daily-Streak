@@ -27,7 +27,8 @@ test('unknown paths return a JSON 404', async () => {
 
 test('unsupported provider names fail clearly before database access', async () => {
   const token = jwt.sign({ sub: '000000000000000000000001' }, config.jwtSecret);
-  const response = await request(app).post('/api/providers/not-a-provider/refresh')
+  const response = await request(app)
+    .post('/api/providers/not-a-provider/refresh')
     .set('Authorization', `Bearer ${token}`);
   assert.equal(response.status, 404);
   assert.equal(response.body.error, 'Unsupported provider.');

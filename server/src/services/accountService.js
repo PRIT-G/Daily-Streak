@@ -16,7 +16,7 @@ export async function exportAccountData(userId) {
     StudentTask.find({ userId }).select('-__v').sort({ dueDate: 1, createdAt: 1 }).lean(),
     UploadedBadge.find({ userId }).select('-__v').sort({ createdAt: 1 }).lean(),
     ExternalIntegration.find({ userId }).select('provider providerData createdAt updatedAt').lean(),
-    PrivateActivityEntry.find({ userId }).sort({ date: 1, createdAt: 1 }).lean()
+    PrivateActivityEntry.find({ userId }).sort({ date: 1, createdAt: 1 }).lean(),
   ]);
 
   return {
@@ -33,10 +33,11 @@ export async function exportAccountData(userId) {
       reminders: user.reminders,
       badges: user.badges,
       earlyAccessConsent: user.earlyAccessConsent,
-      providers: user.providers instanceof Map
-        ? Object.fromEntries(user.providers)
-        : { ...(user.providers || {}) },
-      publicBadgeGalleryEnabled: Boolean(user.publicBadgeGalleryId)
+      providers:
+        user.providers instanceof Map
+          ? Object.fromEntries(user.providers)
+          : { ...(user.providers || {}) },
+      publicBadgeGalleryEnabled: Boolean(user.publicBadgeGalleryId),
     },
     activity,
     tasks,
@@ -47,8 +48,8 @@ export async function exportAccountData(userId) {
       providerData,
       createdAt,
       updatedAt,
-      credentialsIncluded: false
-    }))
+      credentialsIncluded: false,
+    })),
   };
 }
 
@@ -61,15 +62,19 @@ export async function exportActivityCsv(userId) {
   const user = await User.findById(userId).select('goal').lean();
   if (!user) return null;
   const [days, privateCounts] = await Promise.all([
-    ActivityDay.find({ userId }).select('date github leetcode manual sources').sort({ date: 1 }).lean(),
+    ActivityDay.find({ userId })
+      .select('date github leetcode manual sources')
+      .sort({ date: 1 })
+      .lean(),
     PrivateActivityEntry.aggregate([
       { $match: { userId } },
-      { $group: { _id: '$date', count: { $sum: 1 } } }
-    ])
+      { $group: { _id: '$date', count: { $sum: 1 } } },
+    ]),
   ]);
   const merged = new Map(days.map((day) => [day.date, day]));
   for (const { _id: date, count } of privateCounts) {
-    if (!merged.has(date)) merged.set(date, { date, github: 0, leetcode: 0, manual: 0, sources: {} });
+    if (!merged.has(date))
+      merged.set(date, { date, github: 0, leetcode: 0, manual: 0, sources: {} });
     const day = merged.get(date);
     const sources = { ...(day.sources || {}) };
     sources.manual = (Number(sources.manual) || 0) + count;
@@ -82,7 +87,12 @@ export async function exportActivityCsv(userId) {
   const rows = sorted.map((day) => {
     const sources = activitySources(day);
     const total = activityTotal(day);
-    return [day.date, total, total >= target ? 'yes' : 'no', ...sourceIds.map((id) => sources[id] || 0)];
+    return [
+      day.date,
+      total,
+      total >= target ? 'yes' : 'no',
+      ...sourceIds.map((id) => sources[id] || 0),
+    ];
   });
   return [header, ...rows].map((row) => row.map(csvCell).join(',')).join('\r\n') + '\r\n';
 }
@@ -98,7 +108,7 @@ export async function deleteAccount(userId, password) {
     StudentTask.deleteMany({ userId }),
     UploadedBadge.deleteMany({ userId }),
     ExternalIntegration.deleteMany({ userId }),
-    PrivateActivityEntry.deleteMany({ userId })
+    PrivateActivityEntry.deleteMany({ userId }),
   ]);
   const deletion = await User.deleteOne({ _id: userId });
   if (!deletion.deletedCount) return { status: 404, error: 'Account no longer exists.' };

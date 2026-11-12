@@ -5,17 +5,22 @@ const MAX_PAGES = 100;
 async function requestJson(url, fetchImpl) {
   const response = await fetchImpl(url, {
     headers: { Accept: 'application/json', 'User-Agent': 'DailyStreakTracker/1.0' },
-    signal: AbortSignal.timeout(12000)
+    signal: AbortSignal.timeout(12000),
   });
   if (!response.ok) {
-    if (response.status === 404) throw new Error('GitLab profile or public activity was not found.');
+    if (response.status === 404)
+      throw new Error('GitLab profile or public activity was not found.');
     if (response.status === 429) throw new Error('GitLab rate limit reached. Try again later.');
     throw new Error(`GitLab returned status ${response.status}.`);
   }
   return response;
 }
 
-export async function fetchGitLabActivity(username, year = new Date().getUTCFullYear(), fetchImpl = fetch) {
+export async function fetchGitLabActivity(
+  username,
+  year = new Date().getUTCFullYear(),
+  fetchImpl = fetch
+) {
   const clean = username.trim();
   if (!/^[\w.-]{1,255}$/.test(clean)) throw new Error('Enter a valid GitLab username.');
 
@@ -37,7 +42,8 @@ export async function fetchGitLabActivity(username, year = new Date().getUTCFull
     eventsUrl.searchParams.set('page', String(page));
     const response = await requestJson(eventsUrl, fetchImpl);
     const events = await response.json();
-    if (!Array.isArray(events)) throw new Error('GitLab returned an unreadable public activity history.');
+    if (!Array.isArray(events))
+      throw new Error('GitLab returned an unreadable public activity history.');
 
     for (const event of events) {
       if (event.action_name === 'joined') continue;
@@ -52,7 +58,9 @@ export async function fetchGitLabActivity(username, year = new Date().getUTCFull
     const hasNext = nextPage ? Number(nextPage) > page : events.length === PAGE_SIZE;
     if (!hasNext) return counts;
     if (page === MAX_PAGES) {
-      throw new Error('GitLab activity is too large to sync in one request. Try again with a less active profile.');
+      throw new Error(
+        'GitLab activity is too large to sync in one request. Try again with a less active profile.'
+      );
     }
   }
   return counts;
